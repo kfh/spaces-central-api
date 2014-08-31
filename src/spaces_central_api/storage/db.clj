@@ -1,7 +1,8 @@
 (ns spaces-central-api.storage.db
-  (:require [com.stuartsierra.component :as component]
+  (:require [datomic.api :as d]
+            [hara.common :refer [uuid]] 
             [taoensso.timbre :as timbre]
-            [datomic.api :as d]))
+            [com.stuartsierra.component :as component]))
 
 (timbre/refer-timbre)
 
@@ -16,11 +17,14 @@
       (let [conn (d/connect uri)
             schema (load-file schema)]
         (d/transact conn schema)
-        (assoc this :connection conn))))
+        (assoc this :conn conn))))
 
   (stop [this]
     (info "Stopping Datomic")
-    (dissoc this :connection)))
+    (dissoc this :conn)))
 
 (defn datomic [name schema]
   (map->Datomic {:name name :schema schema}))
+
+(defn datomic-test []
+  (map->Datomic {:name (str uuid) :schema "resources/spaces-central-api-schema.edn"}))

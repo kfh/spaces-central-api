@@ -5,6 +5,10 @@
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]))  
 
+(defn spaces-test-db []
+  (component/system-map
+      :datomic (db/datomic-test)))
+
 (defn spaces-system [config]
   (let [{:keys [db-name db-schema http-port]} config]
     (component/system-map

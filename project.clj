@@ -2,11 +2,12 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :dependencies [[ring "1.3.0"]
-                 [org.clojure/clojure "1.6.0"]
                  [compojure "1.1.8"]
-                 [com.stuartsierra/component "0.2.1"]
+                 [im.chit/hara "2.1.2"] 
+                 [org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.2.1"]
-                 [com.datomic/datomic-free "0.9.4880.2"]]
+                 [com.datomic/datomic-free "0.9.4880.2"]
+                 [com.stuartsierra/component "0.2.1"]]
   :plugins [[lein-ring "0.8.11"]]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[org.clojure/tools.namespace "0.2.3"]

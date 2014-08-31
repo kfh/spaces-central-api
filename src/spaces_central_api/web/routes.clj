@@ -7,13 +7,13 @@
 
 (timbre/refer-timbre)
 
-(defn- get-ad [db req ad-id]
-  (if-let [ad (ad-service/get-ad db (:user-id req) ad-id)]
+(defn- get-ad [db req ad-id] 
+  (if-let [ad (ad-service/get-ad (:conn db) ad-id)]
     {:status 200 :body ad}
     {:status 404}))
 
 (defn- get-ads [db req]
-  (if-let [ads (ad-service/get-ads db (:user-id req))]
+  (if-let [ads (ad-service/get-ads (:conn db) (:user-id req))]
     {:status 200 :body ads}
     {:status 404}))
 
