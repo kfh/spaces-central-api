@@ -11,17 +11,21 @@
 
   (start [this]
     (info "Starting Datomic")
-    (let [uri (str "datomic:mem://" name)]
-      (d/delete-database uri)
-      (d/create-database uri)
-      (let [conn (d/connect uri)
-            schema (load-file schema)]
-        (d/transact conn schema)
-        (assoc this :conn conn))))
+    (if (:conn this) 
+      this
+      (let [uri (str "datomic:mem://" name)]
+        (d/delete-database uri)
+        (d/create-database uri)
+        (let [conn (d/connect uri)
+              schema (load-file schema)]
+          (d/transact conn schema)
+          (assoc this :conn conn)))))
 
   (stop [this]
     (info "Stopping Datomic")
-    (dissoc this :conn)))
+    (if-not (:conn this) 
+      this
+      (dissoc this :conn))))
 
 (defn datomic [name schema]
   (map->Datomic {:name name :schema schema}))

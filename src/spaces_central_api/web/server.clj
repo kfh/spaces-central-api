@@ -7,16 +7,20 @@
 
 (defrecord WebServer [port ring-handler]
   component/Lifecycle
-  
+
   (start [this]
     (info "Starting web server")
-    (assoc this :server
-      (run-jetty (:handler ring-handler) {:port port :join? false})))
-  
+    (if (:server this) 
+      this
+      (assoc this :server
+             (run-jetty (:handler ring-handler) {:port port :join? false}))))
+
   (stop [this]
     (info "Stopping web server")
-    (.stop (:server this))
-    (dissoc this :server)))
+    (if-not (:server this) 
+      this
+      (do (.stop (:server this))
+          (dissoc this :server)))))
 
 (defn web-server [port]
   (component/using 

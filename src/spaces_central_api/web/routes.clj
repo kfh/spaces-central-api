@@ -22,16 +22,20 @@
 
   (start [this]
     (info "Enabling api routes")
-    (let [api-routes (routes
-                       (GET "/ads" req (get-ads datomic req))
-                       (GET "/ads/:ad-id" [ad-id :as req] (get-ad datomic req ad-id))
-                       (route/resources "/")
-                       (route/not-found "Not Found"))]
-      (assoc this :routes api-routes)))
+    (if (:routes this)
+      this 
+      (let [api-routes (routes
+                         (GET "/ads" req (get-ads datomic req))
+                         (GET "/ads/:ad-id" [ad-id :as req] (get-ad datomic req ad-id))
+                         (route/resources "/")
+                         (route/not-found "Not Found"))]
+        (assoc this :routes api-routes))))
 
   (stop [this]
     (info "Disabling api routes")
-    (dissoc this :routes)))
+    (if-not (:routes this) 
+      this
+      (dissoc this :routes))))
 
 (defn api-routes []
   (component/using

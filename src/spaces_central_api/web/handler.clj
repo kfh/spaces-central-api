@@ -1,20 +1,24 @@
 (ns spaces-central-api.web.handler
-   (:require [com.stuartsierra.component :as component]
-             [compojure.handler :as handler]
-             [taoensso.timbre :as timbre]))
+  (:require [com.stuartsierra.component :as component]
+            [compojure.handler :as handler]
+            [taoensso.timbre :as timbre]))
 
 (timbre/refer-timbre)
 
 (defrecord RingHandler [api-routes]
   component/Lifecycle
-  
+
   (start [this]
     (info "Enabling ring handler")
-    (assoc this :handler (-> (:routes api-routes) handler/api)))
+    (if (:handler this)
+      this 
+      (assoc this :handler (-> (:routes api-routes) handler/api))))
 
   (stop [this]
     (info "Disabling ring handler")
-    (dissoc this :handler)))
+    (if-not (:handler this)
+      this
+      (dissoc this :handler))))
 
 (defn ring-handler []
   (component/using 
