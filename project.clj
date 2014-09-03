@@ -10,10 +10,14 @@
                  [org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.2.1"]
                  [com.datomic/datomic-free "0.9.4880.2"]
-                 [com.stuartsierra/component "0.2.1"]]
+                 [com.stuartsierra/component "0.2.1"]
+                 [http-kit "2.1.18"]
+                 [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
+                 [ring/ring-codec "1.0.0"]]
   :plugins [[lein-ring "0.8.11"]]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[org.clojure/tools.namespace "0.2.3"]
                                   [org.clojure/java.classpath "0.2.0"]
                                   [javax.servlet/servlet-api "2.5"]
-                                  [ring-mock "0.1.5"]]}})
+                                  [ring-mock "0.1.5"]
+                                  [mvxcvi/puget "0.6.3"]]}})
