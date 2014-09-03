@@ -2,8 +2,11 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :dependencies [[ring "1.3.0"]
+                 [cheshire "5.3.1"]
+                 [clj-http "1.0.0"]
                  [compojure "1.1.8"]
                  [im.chit/hara "2.1.2"] 
+                 [ring/ring-json "0.3.1"] 
                  [org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.2.1"]
                  [com.datomic/datomic-free "0.9.4880.2"]

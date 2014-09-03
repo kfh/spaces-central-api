@@ -1,7 +1,8 @@
 (ns spaces-central-api.web.handler
-  (:require [com.stuartsierra.component :as component]
-            [compojure.handler :as handler]
-            [taoensso.timbre :as timbre]))
+  (:require [compojure.handler :as handler]
+            [taoensso.timbre :as timbre]
+            [com.stuartsierra.component :as component]  
+            [ring.middleware.json :refer [wrap-json-body wrap-json-params wrap-json-response]]))
 
 (timbre/refer-timbre)
 
@@ -12,7 +13,12 @@
     (info "Enabling ring handler")
     (if (:handler this)
       this 
-      (assoc this :handler (-> (:routes api-routes) handler/api))))
+      (assoc this :handler 
+             (-> (:routes api-routes)
+                 (handler/api)
+                 (wrap-json-body {:keywords? true})
+                 (wrap-json-params)
+                 (wrap-json-response)))))
 
   (stop [this]
     (info "Disabling ring handler")

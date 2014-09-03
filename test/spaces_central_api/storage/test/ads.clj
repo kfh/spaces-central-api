@@ -1,13 +1,8 @@
 (ns spaces-central-api.storage.test.ads
-  (:require [datomic.api :as d]
-            [hara.common :refer [uuid]] 
-            [taoensso.timbre :as timbre]
-            [spaces-central-api.storage.ads :as ads]  
+  (:require [spaces-central-api.storage.ads :as ads]  
             [spaces-central-api.system :refer [spaces-test-db]]  
             [clojure.test :refer [deftest testing is]]
             [com.stuartsierra.component :as component]))
-
-(timbre/refer-timbre)
 
 (deftest create-and-get-ad
   (let [system (component/start (spaces-test-db))

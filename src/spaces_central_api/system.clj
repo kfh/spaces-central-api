@@ -9,13 +9,20 @@
   (component/system-map
       :datomic (db/datomic-test)))
 
+(defn spaces-test-system []
+  (component/system-map
+    :datomic (db/datomic-test)
+    :api-routes (routes/api-routes)
+    :ring-handler (handler/ring-handler)
+    :web-server (server/web-server-test)))   
+
 (defn spaces-system [config]
-  (let [{:keys [db-name db-schema http-port]} config]
+  (let [{:keys [db-name db-schema http-host http-port]} config]
     (component/system-map
       :datomic (db/datomic db-name db-schema)
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
-      :web-server (server/web-server http-port))))
+      :web-server (server/web-server http-host http-port))))
 
 (def system nil)
 
@@ -26,6 +33,7 @@
       (spaces-system 
         {:db-name "spaces" 
          :db-schema "resources/spaces-central-api-schema.edn" 
+         :http-host "0.0.0.0"
          :http-port 4444}))))
 
 (defn start []
