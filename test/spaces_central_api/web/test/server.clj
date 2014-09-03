@@ -86,8 +86,7 @@
                       :active true}
               url (str "http://" (:host web-server) ":" (:port web-server))
               create-res (http/post (str url "/ads") {:form-params new-ad :content-type :json})
-              stored-ad (-> create-res :body (json/parse-string true))
-              _ (println stored-ad)]
+              stored-ad (-> create-res :body (json/parse-string true))]
           (is (= 204 (:status (http/delete (str url "/ads/" (:id stored-ad))))))
           (is (= 404 (:status (http/get (str url "/ads/" (:id stored-ad)) {:throw-exceptions false}))))))  
       (finally

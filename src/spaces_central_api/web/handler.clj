@@ -14,7 +14,8 @@
     (if (:handler this)
       this 
       (assoc this :handler 
-             (-> (:routes api-routes)
+             (-> api-routes 
+                 :routes 
                  (handler/api)
                  (wrap-json-body {:keywords? true})
                  (wrap-json-params)
