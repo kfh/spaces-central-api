@@ -4,7 +4,11 @@
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]
-            [spaces-central-api.gateway.geolocation :as geolocation]))
+            [spaces-central-api.gateway.geocoder :as geocoder]))
+
+(defn spaces-test-geocoder []
+  (component/system-map
+      :geocoder (geocoder/google)))
 
 (defn spaces-test-db []
   (component/system-map
@@ -13,19 +17,19 @@
 (defn spaces-test-system []
   (component/system-map
     :datomic (db/datomic-test)
+    :geocoder (geocoder/google)
     :api-routes (routes/api-routes)
     :ring-handler (handler/ring-handler)
-    :web-server (server/web-server-test)
-    :geolocation (geolocation/geolocation "https://maps.googleapis.com/maps/api/geocode/json?")))
+    :web-server (server/web-server-test)))
 
 (defn spaces-system [config]
   (let [{:keys [db-name db-schema http-host http-port geolocation-url]} config]
     (component/system-map
       :datomic (db/datomic db-name db-schema)
+      :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
-      :web-server (server/web-server http-host http-port)
-      :geolocation (geolocation/geolocation geolocation-url))))
+      :web-server (server/web-server http-host http-port))))
 
 (def system nil)
 

@@ -39,7 +39,7 @@
     {:status 204}
     {:status 404}))
 
-(defrecord ApiRoutes [datomic]
+(defrecord ApiRoutes [datomic geocoder]
   component/Lifecycle
 
   (start [this]
@@ -65,4 +65,4 @@
 (defn api-routes []
   (component/using
     (map->ApiRoutes {})
-    [:datomic]))
+    [:datomic :geocoder]))

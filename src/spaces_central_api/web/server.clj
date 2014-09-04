@@ -1,7 +1,7 @@
 (ns spaces-central-api.web.server
-  (:require [com.stuartsierra.component :as component]
-            [ring.adapter.jetty :refer [run-jetty]]
-            [taoensso.timbre :as timbre]))
+  (:require [taoensso.timbre :as timbre]
+            [ring.adapter.jetty :refer [run-jetty]]  
+            [com.stuartsierra.component :as component]))
 
 (timbre/refer-timbre)
 

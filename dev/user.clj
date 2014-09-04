@@ -5,10 +5,8 @@
             [clojure.repl :refer :all]
             [clojure.test :as test]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [puget.printer :refer [cprint]]
             [spaces-central-api.system :as sys] 
-            [com.stuartsierra.component :as component]
-            [spaces-central-api.gateway.geolocation :as geolocation]))
+            [com.stuartsierra.component :as component]))
 
 (def system nil)
 
@@ -19,8 +17,7 @@
       (sys/spaces-system 
         {:db-name "spaces" 
          :db-schema "resources/spaces-central-api-schema.edn" 
-         :http-port 4444
-         :geolocation-url "https://maps.googleapis.com/maps/api/geocode/json?"}))))
+         :http-port 4444}))))
 
 (defn start []
   (alter-var-root #'system component/start))
