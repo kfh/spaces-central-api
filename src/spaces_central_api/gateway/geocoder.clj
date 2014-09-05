@@ -10,13 +10,13 @@
   component/Lifecycle
 
   (start [this] 
-    (info "Enabling Google geocoder")
+    (info "Enabling geocoder")
     (if (:type this)
       this
       (assoc this :type :google)))
 
   (stop [this] 
-    (info "Disabling Google geocoder")
+    (info "Disabling geocoder")
     (if-not (:type this)
       this
       (dissoc this :type))))
@@ -28,13 +28,13 @@
   component/Lifecycle
 
   (start [this] 
-    (info "Enabling Bing geocoder")
+    (info "Enabling geocoder")
     (if (:type this)
       this
       (assoc this :type :bing)))
 
   (stop [this] 
-    (info "Disabling Bing geocoder")
+    (info "Disabling geocoder")
     (if-not (:type this)
       this
       (dissoc this :type))))

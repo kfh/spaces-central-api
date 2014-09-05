@@ -17,22 +17,24 @@
     {:status 200 :body ads}
     {:status 404}))
 
-(defn- create-ad [db req]
+(defn- create-ad [db geocoder req]
   {:status 201
    :body (ad-service/create-ad 
-           (:conn db) 
+           (:conn db)
+           (:type geocoder) 
            (select-keys 
              (:params req) 
              [:type :start-time :end-time :active]))})
 
-(defn- update-ad [db req ad-id]
+(defn- update-ad [db geocoder req ad-id]
   {:status 201
    :body (ad-service/update-ad 
-           (:conn db) 
+           (:conn db)
+           (:type geocoder) 
            (select-keys 
              (:params req) 
              [:type :start-time :end-time :active])
-          ad-id)})
+           ad-id)})
 
 (defn- delete-ad [db ad-id]
   (if (ad-service/delete-ad (:conn db) ad-id)
@@ -49,8 +51,8 @@
       (let [api-routes (routes
                          (GET "/ads" req (get-ads datomic))
                          (GET "/ads/:ad-id" [ad-id :as req] (get-ad datomic ad-id))
-                         (POST "/ads" req (create-ad datomic req))
-                         (PUT "/ads/:ad-id" [ad-id :as req] (update-ad datomic req ad-id))
+                         (POST "/ads" req (create-ad datomic geocoder req))
+                         (PUT "/ads/:ad-id" [ad-id :as req] (update-ad datomic geocoder req ad-id))
                          (DELETE "/ads/:ad-id" [ad-id :as req] (delete-ad datomic ad-id))
                          (route/resources "/")
                          (route/not-found "Not Found"))]

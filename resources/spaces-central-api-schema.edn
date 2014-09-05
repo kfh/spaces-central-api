@@ -145,31 +145,31 @@
   :db/cardinality :db.cardinality/one
   :db.install/_attribute :db.part/db}
 
- ;; gps
+ ;; geocode
  {:db/id #db/id[:db.part/db]
-  :db/ident :gps/public-id
+  :db/ident :geocode/public-id
   :db/valueType :db.type/string
   :db/unique :db.unique/identity
   :db/cardinality :db.cardinality/one
-  :db/doc "Public id of gps"
+  :db/doc "Public id of geocode"
   :db.install/_attribute :db.part/db} 
 
 {:db/id #db/id[:db.part/db]
- :db/ident :gps/latitude
+ :db/ident :geocode/latitude
  :db/valueType :db.type/string
  :db/cardinality :db.cardinality/one
  :db/doc "Latitude coordinates"
  :db.install/_attribute :db.part/db}
 
 {:db/id #db/id[:db.part/db]
- :db/ident :gps/longitude
+ :db/ident :geocode/longitude
  :db/valueType :db.type/string
  :db/cardinality :db.cardinality/one
  :db/doc "Longitude coordinates"
  :db.install/_attribute :db.part/db}
 
 {:db/id #db/id[:db.part/db]
- :db/ident :gps/location
+ :db/ident :geocode/location
  :db/valueType :db.type/ref
  :db/cardinality :db.cardinality/one
  :db.install/_attribute :db.part/db}

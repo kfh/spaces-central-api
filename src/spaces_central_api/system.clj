@@ -23,7 +23,7 @@
     :web-server (server/web-server-test)))
 
 (defn spaces-system [config]
-  (let [{:keys [db-name db-schema http-host http-port geolocation-url]} config]
+  (let [{:keys [db-name db-schema http-host http-port]} config]
     (component/system-map
       :datomic (db/datomic db-name db-schema)
       :geocoder (geocoder/google)  
@@ -40,7 +40,6 @@
       (spaces-system
         {:db-name "spaces"
          :db-schema "resources/spaces-central-api-schema.edn"
-         :geolocation-url "https://maps.googleapis.com/maps/api/geocode/json?"
          :http-host "0.0.0.0"
          :http-port 4444}))))
 
