@@ -36,18 +36,17 @@
   :db/doc "If the ad is active or not"
   :db.install/_attribute :db.part/db}
 
+ {:db/id #db/id[:db.part/db]
+  :db/ident :ad/real-estate
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/isComponent true
+  :db.install/_attribute :db.part/db} 
+
  ;; ad.type enum values
  [:db/add #db/id[:db.part/user] :db/ident :ad.type/real-estate]
 
  ;; real estate 
- {:db/id #db/id[:db.part/db]
-  :db/ident :real-estate/public-id
-  :db/valueType :db.type/string
-  :db/unique :db.unique/identity
-  :db/cardinality :db.cardinality/one
-  :db/doc "Public id of real estate"
-  :db.install/_attribute :db.part/db} 
-
  {:db/id #db/id[:db.part/db]
   :db/ident :real-estate/title
   :db/valueType :db.type/string
@@ -93,16 +92,16 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :real-estate/ad
-  :db/valueType :db.type/ref
-  :db/cardinality :db.cardinality/one
-  :db.install/_attribute :db.part/db}
-
- {:db/id #db/id[:db.part/db]
   :db/ident :real-estate/features
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db/doc "Property features"
+  :db/doc "Real estate features"
+  :db.install/_attribute :db.part/db} 
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :real-estate/location
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/one
   :db.install/_attribute :db.part/db}
 
  ;; real-estate.type enum values
@@ -118,14 +117,6 @@
 
  ;; location
  {:db/id #db/id[:db.part/db]
-  :db/ident :location/public-id
-  :db/valueType :db.type/string
-  :db/unique :db.unique/identity
-  :db/cardinality :db.cardinality/one
-  :db/doc "Public id of location"
-  :db.install/_attribute :db.part/db} 
-
- {:db/id #db/id[:db.part/db]
   :db/ident :location/name
   :db/valueType :db.type/string
   :db/cardinality :db.cardinality/one
@@ -133,44 +124,52 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :location/address
+  :db/ident :location/street
   :db/valueType :db.type/string
   :db/cardinality :db.cardinality/one
-  :db/doc "Address of location"
+  :db/doc "Street of location"
   :db.install/_attribute :db.part/db}
-
+ 
  {:db/id #db/id[:db.part/db]
-  :db/ident :location/real-estate
+  :db/ident :location/street-number
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc "Street number of location"
+  :db.install/_attribute :db.part/db}
+ 
+ {:db/id #db/id[:db.part/db]
+  :db/ident :location/zip-code
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc "Zip code of location"
+  :db.install/_attribute :db.part/db} 
+  
+ {:db/id #db/id[:db.part/db]
+  :db/ident :location/city
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc "City of location"
+  :db.install/_attribute :db.part/db}
+ 
+ {:db/id #db/id[:db.part/db]
+  :db/ident :location/geocode
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/one
+  :db/isComponent true
   :db.install/_attribute :db.part/db}
 
  ;; geocode
  {:db/id #db/id[:db.part/db]
-  :db/ident :geocode/public-id
-  :db/valueType :db.type/string
-  :db/unique :db.unique/identity
+  :db/ident :geocode/latitude
+  :db/valueType :db.type/double
   :db/cardinality :db.cardinality/one
-  :db/doc "Public id of geocode"
-  :db.install/_attribute :db.part/db} 
+  :db/doc "Latitude coordinates"
+  :db.install/_attribute :db.part/db}
 
-{:db/id #db/id[:db.part/db]
- :db/ident :geocode/latitude
- :db/valueType :db.type/string
- :db/cardinality :db.cardinality/one
- :db/doc "Latitude coordinates"
- :db.install/_attribute :db.part/db}
-
-{:db/id #db/id[:db.part/db]
- :db/ident :geocode/longitude
- :db/valueType :db.type/string
- :db/cardinality :db.cardinality/one
- :db/doc "Longitude coordinates"
- :db.install/_attribute :db.part/db}
-
-{:db/id #db/id[:db.part/db]
- :db/ident :geocode/location
- :db/valueType :db.type/ref
- :db/cardinality :db.cardinality/one
- :db.install/_attribute :db.part/db}
+ {:db/id #db/id[:db.part/db]
+  :db/ident :geocode/longitude
+  :db/valueType :db.type/double
+  :db/cardinality :db.cardinality/one
+  :db/doc "Longitude coordinates"
+  :db.install/_attribute :db.part/db}
 ]

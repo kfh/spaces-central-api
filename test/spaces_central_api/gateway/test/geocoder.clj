@@ -9,7 +9,7 @@
         {:keys [geocoder]} system]
     (try
       (testing "Geocoding an address"
-        (let [address {:street "Sukhumvit Road" :street-number "413" :zip "10110" :city "Bangkok"}  
+        (let [address {:loc-street "Sukhumvit Road" :loc-street-num "413" :loc-zip-code "10110" :loc-city "Bangkok"}  
               result (-> (geocode-address (:type geocoder) address) first)
               {:keys [lng lat]} (-> result :geometry :location)]
           (is (= (:formatted-address result) "413 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10110, Thailand"))  

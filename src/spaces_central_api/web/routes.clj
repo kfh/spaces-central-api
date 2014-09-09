@@ -20,21 +20,12 @@
 (defn- create-ad [db geocoder req]
   {:status 201
    :body (ad-service/create-ad 
-           (:conn db)
-           (:type geocoder) 
-           (select-keys 
-             (:params req) 
-             [:type :start-time :end-time :active]))})
+           (:conn db) (:type geocoder) (:params req))})
 
 (defn- update-ad [db geocoder req ad-id]
   {:status 201
    :body (ad-service/update-ad 
-           (:conn db)
-           (:type geocoder) 
-           (select-keys 
-             (:params req) 
-             [:type :start-time :end-time :active])
-           ad-id)})
+           (:conn db) (:type geocoder) (:params req) ad-id)})
 
 (defn- delete-ad [db ad-id]
   (if (ad-service/delete-ad (:conn db) ad-id)
