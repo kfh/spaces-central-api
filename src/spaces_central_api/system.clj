@@ -1,10 +1,14 @@
 (ns spaces-central-api.system
-  (:require [com.stuartsierra.component :as component]
+  (:gen-class)
+  (:require [taoensso.timbre :as timbre] 
             [spaces-central-api.storage.db :as db]
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]
-            [spaces-central-api.gateway.geocoder :as geocoder]))
+            [spaces-central-api.gateway.geocoder :as geocoder]
+            [com.stuartsierra.component :as component]))
+
+(timbre/refer-timbre)
 
 (defn spaces-test-geocoder []
   (component/system-map
@@ -49,3 +53,8 @@
 (defn stop []
   (alter-var-root #'system
     (fn [s] (when s (component/stop s)))))
+
+(defn -main [& args]
+  (init)
+  (start)
+  (info "Spaces central api up and running"))

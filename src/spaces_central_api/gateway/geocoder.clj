@@ -51,8 +51,8 @@
   (google/geocode-address (str loc-street  " " loc-street-num ", " loc-zip-code " " loc-city))))
 
 (defmethod geocode-address :bing [_ address]
-  (let [{:keys [street street-number zip city]} address]
-    (bing/geocode-address (str street  " " street-number ", " zip " " city))))
+ (let [{:keys [loc-street loc-street-num loc-zip-code loc-city]} address]
+  (bing/geocode-address (str loc-street  " " loc-street-num ", " loc-zip-code " " loc-city))))
 
 (defmethod geocode-location :google [_ location]
   (google/geocode-location (str (:lat location) "," (:long location))))

@@ -13,8 +13,8 @@
               result (-> (geocode-address (:type geocoder) address) first)
               {:keys [lng lat]} (-> result :geometry :location)]
           (is (= (:formatted-address result) "413 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10110, Thailand"))  
-          (is (= lng 100.5639662))
-          (is (= lat 13.734603))))  
+          (is (= lng 100.5646072))
+          (is (= lat 13.7341553))))  
       (finally
         (component/stop system)))))
 
@@ -23,11 +23,11 @@
         {:keys [geocoder]} system]
     (try
       (testing "Geocoding a location"
-        (let [location {:long 100.5639662 :lat 13.734603}  
+        (let [location {:long 100.5646072 :lat 13.7341553}  
               result (-> (geocode-location (:type geocoder) location) first)
               {:keys [lng lat]} (-> result :geometry :location)]
-          (is (= lng 100.5639662))
-          (is (= lat 13.734603))
-          (is (= (:formatted-address result) "11-487 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10110, Thailand"))))
+          (is (= lng 100.5646072))
+          (is (= lat 13.7341553))
+          (is (= (:formatted-address result) "14-493 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10110, Thailand"))))
       (finally
         (component/stop system)))))
