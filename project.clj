@@ -17,6 +17,6 @@
                    :dependencies [[org.clojure/tools.namespace "0.2.6"]
                                   [org.clojure/java.classpath "0.2.2"]
                                   [javax.servlet/servlet-api "2.5"]
-                                  [ring-mock "0.1.5"]]}}
-  :main spaces-central-api.system
-  :aot [spaces-central-api.system])
+                                  [ring-mock "0.1.5"]]}
+             :uberjar {:main spaces-central-api.system
+                       :aot [spaces-central-api.system]}})
