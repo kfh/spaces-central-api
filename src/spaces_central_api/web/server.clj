@@ -31,5 +31,5 @@
 
 (defn web-server-test []
   (component/using 
-    (map->WebServer {:host "0.0.0.0" :port 7777})
+    (map->WebServer {:host "127.0.0.1" :port 7777})
     [:ring-handler]))
