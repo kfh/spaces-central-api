@@ -1,27 +1,27 @@
 (ns spaces-central-api.web.routes
-  (:require [com.stuartsierra.component :as component]
-            [compojure.core :refer :all]
+  (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [taoensso.timbre :as timbre]
             [liberator.core :refer [resource]]
-            [spaces-central-api.service.ads :as ad-service])) 
+            [com.stuartsierra.component :as component] 
+            [spaces-central-api.service.ads :as service])) 
 
 (timbre/refer-timbre)
 
 (defn- get-ad [db ad-id] 
-  (ad-service/get-ad (:conn db) ad-id))
+  (service/get-ad (:conn db) ad-id))
 
 (defn- get-ads [db]
-  (ad-service/get-ads (:conn db)))
+  (service/get-ads (:conn db)))
 
 (defn- create-ad [db geocoder req]
-  (ad-service/create-ad (:conn db) (:type geocoder) (:params req)))
+  (service/create-ad (:conn db) (:type geocoder) (:params req)))
 
 (defn- update-ad [db geocoder ad-id req]
-  (ad-service/update-ad (:conn db) (:type geocoder) ad-id (:params req)))
+  (service/update-ad (:conn db) (:type geocoder) ad-id (:params req)))
 
 (defn- delete-ad [db ad-id]
-  (ad-service/delete-ad (:conn db) ad-id))
+  (service/delete-ad (:conn db) ad-id))
 
 (defrecord ApiRoutes [datomic geocoder]
   component/Lifecycle

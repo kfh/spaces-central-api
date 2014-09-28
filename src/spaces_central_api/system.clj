@@ -44,7 +44,7 @@
       (spaces-system
         {:db-name "spaces"
          :db-schema "resources/spaces-central-api-schema.edn"
-         :http-host "0.0.0.0"
+         :http-host "127.0.0.1"
          :http-port 4444}))))
 
 (defn start []
