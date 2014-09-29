@@ -14,22 +14,22 @@
    :geo-long (-> entity :location/geocode :geocode/longitude)})
 
 (defn- find-eid [conn attrs]
-  (let [{:keys [loc-street loc-street-num loc-zip-code loc-city]} attrs]
-    (let [db (d/db conn)]
-      (-> (d/q
-            '[:find ?e
-              :in $ ?street ?street-num ?zip-code ?city
-              :where 
-              [?e :location/street ?street]
-              [?e :location/street-number ?street-num]
-              [?e :location/zip-code ?zip-code]
-              [?e :location/city ?city]]
-            db
-            loc-street
-            loc-street-num
-            loc-zip-code
-            loc-city)
-          (ffirst))))) 
+  (let [db (d/db conn)  
+        {:keys [loc-street loc-street-num loc-zip-code loc-city]} attrs]
+    (-> (d/q
+          '[:find ?e
+            :in $ ?street ?street-num ?zip-code ?city
+            :where 
+            [?e :location/street ?street]
+            [?e :location/street-number ?street-num]
+            [?e :location/zip-code ?zip-code]
+            [?e :location/city ?city]]
+          db
+          loc-street
+          loc-street-num
+          loc-zip-code
+          loc-city)
+        (ffirst)))) 
 
 (defn find-location [conn attrs]
   (when-let [eid (find-eid conn attrs)]
