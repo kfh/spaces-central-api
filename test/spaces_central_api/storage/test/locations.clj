@@ -10,7 +10,7 @@
         {:keys [datomic]} system
         {:keys [conn]} datomic]
     (try 
-      (testing "Creating and retreiving an ad"
+      (testing "Creating ad and finding location"
         (let [new-ad (ads/create-ad 
                        conn 
                        {:ad-type :ad.type/real-estate 
