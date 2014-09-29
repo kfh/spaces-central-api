@@ -11,5 +11,5 @@
 (defn geocode-location [geocoder location]
   (geocoder/geocode-location geocoder location))
 
-(defn find-location [conn location]
-  (loc-storage/find-location conn location))
+(defn find-location [conn ad]
+  (loc-storage/find-location conn ad))

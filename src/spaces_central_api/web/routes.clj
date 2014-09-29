@@ -40,15 +40,15 @@
                             :post! (fn [ctx] {::res (create-ad datomic geocoder (:request ctx))})
                             :handle-created ::res
                             :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))})))
-                     (ANY "/ads/:id" [id] 
+                     (ANY "/ads/:ad-id" [ad-id] 
                           (resource
                             :allowed-methods [:get :put :delete]
                             :available-media-types ["application/json"]
-                            :exists? (fn [_] (when-let [ad (get-ad datomic id)] {::res ad}))
+                            :exists? (fn [_] (when-let [ad (get-ad datomic ad-id)] {::res ad}))
                             :handle-ok ::res
-                            :put! (fn [ctx] {::res (update-ad datomic geocoder id (:request ctx))})
+                            :put! (fn [ctx] {::res (update-ad datomic geocoder ad-id (:request ctx))})
                             :handle-created ::res
-                            :delete! (fn [_] (delete-ad datomic id))
+                            :delete! (fn [_] (delete-ad datomic ad-id))
                             :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))))]
         (assoc this :routes api-routes))))
 
