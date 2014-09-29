@@ -7,7 +7,7 @@
 (timbre/refer-timbre)
 
 (defn get-ad [conn ad-id]
-  (storage/get-ad conn ad-id))
+  (storage/get-ad conn (domain/validate-ad-id ad-id)))
 
 (defn get-ads [conn]
   (storage/get-ads conn))
@@ -52,4 +52,4 @@
           (dissoc :geo-lat :geo-long)))))
 
 (defn delete-ad [conn ad-id]
-  (storage/delete-ad conn ad-id))
+  (storage/delete-ad conn (domain/validate-ad-id ad-id)))
