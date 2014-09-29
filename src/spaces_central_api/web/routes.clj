@@ -2,7 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [taoensso.timbre :as timbre]
-            [liberator.core :refer [defresource resource]]
+            [liberator.core :refer [defresource]]
             [com.stuartsierra.component :as component] 
             [spaces-central-api.service.ads :as service])) 
 
