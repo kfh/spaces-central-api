@@ -2,7 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [taoensso.timbre :as timbre]
-            [liberator.core :refer [resource]]
+            [liberator.core :refer [defresource resource]]
             [com.stuartsierra.component :as component] 
             [spaces-central-api.service.ads :as service])) 
 
@@ -23,6 +23,24 @@
 (defn- delete-ad [db ad-id]
   (service/delete-ad (:conn db) ad-id))
 
+(defresource list-resource [datomic geocoder]
+  :allowed-methods [:get :post]
+  :available-media-types ["application/json"]
+  :handle-ok (fn [_] (get-ads datomic))      
+  :post! (fn [ctx] {::res (create-ad datomic geocoder (:request ctx))})
+  :handle-created ::res
+  :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
+
+(defresource ad-resource [datomic geocoder ad-id]
+  :allowed-methods [:get :put :delete]
+  :available-media-types ["application/json"]
+  :exists? (fn [_] (when-let [ad (get-ad datomic ad-id)] {::res ad}))
+  :handle-ok ::res
+  :put! (fn [ctx] {::res (update-ad datomic geocoder ad-id (:request ctx))})
+  :handle-created ::res
+  :delete! (fn [_] (delete-ad datomic ad-id))
+  :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
+
 (defrecord ApiRoutes [datomic geocoder]
   component/Lifecycle
 
@@ -30,27 +48,10 @@
     (info "Enabling api routes")
     (if (:routes this)
       this 
-      (let [api-routes 
-            (context "/api" []
-                     (ANY "/ads" []
-                          (resource
-                            :allowed-methods [:get :post]
-                            :available-media-types ["application/json"]
-                            :handle-ok (fn [_] (get-ads datomic))      
-                            :post! (fn [ctx] {::res (create-ad datomic geocoder (:request ctx))})
-                            :handle-created ::res
-                            :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))})))
-                     (ANY "/ads/:ad-id" [ad-id] 
-                          (resource
-                            :allowed-methods [:get :put :delete]
-                            :available-media-types ["application/json"]
-                            :exists? (fn [_] (when-let [ad (get-ad datomic ad-id)] {::res ad}))
-                            :handle-ok ::res
-                            :put! (fn [ctx] {::res (update-ad datomic geocoder ad-id (:request ctx))})
-                            :handle-created ::res
-                            :delete! (fn [_] (delete-ad datomic ad-id))
-                            :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))))]
-        (assoc this :routes api-routes))))
+      (->> (context "/api" []
+                    (ANY "/ads" [] (list-resource datomic geocoder))
+                    (ANY "/ads/:ad-id" [ad-id] (ad-resource datomic geocoder ad-id) ))
+           (assoc this :routes))))
 
   (stop [this]
     (info "Disabling api routes")
