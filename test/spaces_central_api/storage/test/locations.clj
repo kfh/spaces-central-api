@@ -1,5 +1,6 @@
 (ns spaces-central-api.storage.test.locations
-  (:require [spaces-central-api.storage.ads :as ads]
+  (:require [spaces-central-api.storage.ads :as storage]
+            [spaces-central-api.service.ads :as service]
             [spaces-central-api.storage.locations :as locations]  
             [spaces-central-api.system :refer [spaces-test-db]]  
             [clojure.test :refer [deftest testing is]]
@@ -11,7 +12,7 @@
         {:keys [conn]} datomic]
     (try 
       (testing "Creating ad and finding location"
-        (let [new-ad (ads/create-ad 
+        (let [new-ad (storage/create-ad 
                        conn 
                        {:ad-type :ad.type/real-estate 
                         :ad-start-time "14:45" 
@@ -31,9 +32,9 @@
                         :loc-city "Bangkok" 
                         :geo-lat 13.734603
                         :geo-long 100.5639662})]
-          (let [stored-ad (ads/get-ad conn (:ad-id new-ad))]
+          (let [stored-ad (storage/get-ad conn (:ad-id new-ad))]
             (is (= (:ad-id new-ad) (:ad-id stored-ad)))
-            (let [location  (locations/find-location conn stored-ad)]
+            (let [location  (locations/find-location conn (service/->location stored-ad))]
               (is (= (:loc-name stored-ad) (:loc-name location)))
               (is (= (:loc-street stored-ad) (:loc-street location)))
               (is (= (:loc-street-num stored-ad) (:loc-street-num location)))

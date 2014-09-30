@@ -1,6 +1,7 @@
 (ns spaces-central-api.storage.locations
   (:require [datomic.api :as d] 
-            [taoensso.timbre :as timbre])) 
+            [taoensso.timbre :as timbre]
+            [spaces-central-api.domain.locations :as domain])) 
 
 (timbre/refer-timbre)
 
@@ -32,6 +33,6 @@
         (ffirst)))) 
 
 (defn find-location [conn attrs]
-  (when-let [eid (find-eid conn attrs)]
+  (when-let [eid (find-eid conn (domain/validate-location attrs))]
     (-> (d/entity (d/db conn) eid)
         (->location))))
