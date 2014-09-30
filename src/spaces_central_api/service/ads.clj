@@ -1,5 +1,6 @@
 (ns spaces-central-api.service.ads
-  (:require [taoensso.timbre :as timbre]
+  (:require [ribol.core :refer [raise]]
+            [taoensso.timbre :as timbre]
             [spaces-central-api.domain.ads :as domain]  
             [spaces-central-api.storage.ads :as storage]  
             [spaces-central-api.service.geocodes :as geocodes]))    
@@ -20,7 +21,7 @@
     (let [lat (-> geocodes :geometry :location :lat) 
           long (-> geocodes :geometry :location :lng)]
       (assoc ad :geo-lat lat :geo-long long))
-    ad))
+    (raise [:add-geocodes {:value ad}])))
 
 (defn create-ad [conn geocoder ad]
   (let [create-ad (partial storage/create-ad conn)

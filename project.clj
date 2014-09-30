@@ -7,6 +7,7 @@
                  [compojure "1.1.9"]
                  [liberator "0.12.2"]
                  [im.chit/hara "2.1.3"] 
+                 [im.chit/ribol "0.3.3"]
                  [geocoder-clj "0.2.5"]
                  [ring/ring-json "0.3.1"] 
                  [prismatic/schema "0.3.0"]
