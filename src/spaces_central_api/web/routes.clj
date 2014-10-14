@@ -14,34 +14,34 @@
 (defn- get-ads [db]
   (service/get-ads (:conn db)))
 
-(defn- create-ad [db geocoder req]
-  (service/create-ad (:conn db) (:type geocoder) (:params req)))
+(defn- create-ad [env db geocoder req]
+  (service/create-ad (:search-api-url env) (:conn db) (:type geocoder) (:params req)))
 
-(defn- update-ad [db geocoder ad-id req]
-  (service/update-ad (:conn db) (:type geocoder) ad-id (:params req)))
+(defn- update-ad [env db geocoder ad-id req]
+  (service/update-ad (:search-api-url env) (:conn db) (:type geocoder) ad-id (:params req)))
 
-(defn- delete-ad [db ad-id]
-  (service/delete-ad (:conn db) ad-id))
+(defn- delete-ad [env db ad-id]
+  (service/delete-ad (:search-api-url env) (:conn db) ad-id))
 
-(defresource list-resource [datomic geocoder]
+(defresource list-resource [env datomic geocoder]
   :allowed-methods [:get :post]
   :available-media-types ["application/json"]
   :handle-ok (fn [_] (get-ads datomic))      
-  :post! (fn [ctx] {::res (create-ad datomic geocoder (:request ctx))})
+  :post! (fn [ctx] {::res (create-ad env datomic geocoder (:request ctx))})
   :handle-created ::res
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
-(defresource ad-resource [datomic geocoder ad-id]
+(defresource ad-resource [env datomic geocoder ad-id]
   :allowed-methods [:get :put :delete]
   :available-media-types ["application/json"]
   :exists? (fn [_] (when-let [ad (get-ad datomic ad-id)] {::res ad}))
   :handle-ok ::res
-  :put! (fn [ctx] {::res (update-ad datomic geocoder ad-id (:request ctx))})
+  :put! (fn [ctx] {::res (update-ad env datomic geocoder ad-id (:request ctx))})
   :handle-created ::res
-  :delete! (fn [_] (delete-ad datomic ad-id))
+  :delete! (fn [_] (delete-ad env datomic ad-id))
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
-(defrecord ApiRoutes [datomic geocoder]
+(defrecord ApiRoutes [env datomic geocoder]
   component/Lifecycle
 
   (start [this]
@@ -49,8 +49,8 @@
     (if (:routes this)
       this 
       (->> (context "/api" []
-                    (ANY "/ads" [] (list-resource datomic geocoder))
-                    (ANY "/ads/:ad-id" [ad-id] (ad-resource datomic geocoder ad-id) ))
+                    (ANY "/ads" [] (list-resource env datomic geocoder))
+                    (ANY "/ads/:ad-id" [ad-id] (ad-resource env datomic geocoder ad-id) ))
            (assoc this :routes))))
 
   (stop [this]
@@ -62,4 +62,4 @@
 (defn api-routes []
   (component/using
     (map->ApiRoutes {})
-    [:datomic :geocoder]))
+    [:env :datomic :geocoder]))

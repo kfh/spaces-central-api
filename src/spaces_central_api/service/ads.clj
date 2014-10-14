@@ -1,9 +1,9 @@
 (ns spaces-central-api.service.ads
-  (:require [ribol.core :refer [raise]]
-            [taoensso.timbre :as timbre]
-            [spaces-central-api.domain.ads :as domain]  
-            [spaces-central-api.storage.ads :as storage]  
-            [spaces-central-api.service.geocodes :as geocodes]))    
+    (:require [ribol.core :refer [raise]]
+              [taoensso.timbre :as timbre]
+              [spaces-central-api.domain.ads :as domain]  
+              [spaces-central-api.storage.ads :as storage]  
+              [spaces-central-api.service.geocodes :as geocodes]))    
 
 (timbre/refer-timbre)
 
@@ -23,7 +23,7 @@
       (assoc ad :geo-lat lat :geo-long long))
     (raise [:add-geocodes {:value ad}])))
 
-(defn create-ad [conn geocoder ad]
+(defn create-ad [search-api-url conn geocoder ad]
   (let [create-ad (partial storage/create-ad conn)
         add-geocodes (partial add-geocodes geocoder) 
         val-ad (->> ad (domain/coerce-ad) (domain/validate-ad))]
@@ -38,7 +38,7 @@
           (create-ad)
           (dissoc :geo-lat :geo-long)))))
 
-(defn update-ad [conn geocoder ad-id ad]
+(defn update-ad [search-api-url conn geocoder ad-id ad]
   (domain/validate-ad-id ad-id)
   (let [update-ad (partial storage/update-ad conn)
         add-geocodes (partial add-geocodes geocoder)
@@ -55,5 +55,5 @@
           (update-ad)
           (dissoc :geo-lat :geo-long)))))
 
-(defn delete-ad [conn ad-id]
+(defn delete-ad [search-api-url conn ad-id]
   (storage/delete-ad conn (domain/validate-ad-id ad-id)))

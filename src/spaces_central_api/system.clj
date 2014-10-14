@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [taoensso.timbre :as timbre] 
             [spaces-central-api.storage.db :as db]
+            [spaces-central-api.env.variables :as env]
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]
@@ -20,6 +21,7 @@
 
 (defn spaces-test-system []
   (component/system-map
+    :env (env/environment-test)
     :datomic (db/datomic-test)
     :geocoder (geocoder/google)
     :api-routes (routes/api-routes)
@@ -29,6 +31,7 @@
 (defn spaces-system [config]
   (let [{:keys [db-name db-schema http-host http-port]} config]
     (component/system-map
+      :env (env/environment)
       :datomic (db/datomic db-name db-schema)
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
