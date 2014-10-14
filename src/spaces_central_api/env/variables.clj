@@ -23,7 +23,7 @@
     (info "Assembling Environment")
     (cond->
       this
-      ((complement :datomic-url) this) (assemble-datomic-uri)
+      ((complement :datomic-uri) this) (assemble-datomic-uri)
       ((complement :search-api-url) this) (assemble-search-api-url)))
   
   (stop [this]
