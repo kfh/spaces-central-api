@@ -13,8 +13,8 @@
                      result (-> (geocode-address (:type geocoder) address) first)
                      {:keys [lng lat]} (-> result :geometry :location)]
                  (is (= (:formatted-address result) "413 Sukhumvit Road, Khlong Toei, Khlong Toei, Bangkok 10110, Thailand"))  
-                 (is (= lng 100.5619993))
-                 (is (= lat 13.7360241))))  
+                 (is (= lng 100.5646072))
+                 (is (= lat 13.7341553))))  
       (finally
         (component/stop system)))))
 
