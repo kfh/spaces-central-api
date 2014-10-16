@@ -15,7 +15,6 @@
                  [org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.3.1"]
                  [com.stuartsierra/component "0.2.2"] 
-                 [com.cognitect/transit-clj "0.8.259"]
                  [com.datomic/datomic-free "0.9.4894"]
                  [io.clojure/liberator-transit "0.3.0"]]
   :plugins [[lein-ring "0.8.11"]]
