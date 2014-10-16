@@ -1,6 +1,5 @@
 (ns spaces-central-api.web.test.server
   (:require [clj-http.client :as http] 
-            [cheshire.core :as json] 
             [clojure.test :refer [deftest testing is]]
             [com.stuartsierra.component :as component]  
             [spaces-central-api.system :refer [spaces-test-system]]))
@@ -27,26 +26,28 @@
                       :loc-zip-code "10110"
                       :loc-city "Bangkok"}
               url (str "http://" (:host web-server) ":" (:port web-server))
-              response (http/post (str url "/api/ads") {:form-params new-ad :content-type :json})
-              returned-ad (-> response :body (json/parse-string true))]
-          (is (= (:ad-type new-ad) (:ad-type returned-ad)))
-          (is (= (:ad-start-time new-ad) (:ad-start-time returned-ad)))
-          (is (= (:ad-end-time new-ad) (:ad-end-time returned-ad)))
-          (is (= (:ad-active new-ad) (:ad-active returned-ad)))
-          (is (= (:res-title new-ad) (:res-title returned-ad)))   
-          (is (= (:res-desc new-ad) (:res-desc returned-ad)))   
-          (is (= (:res-type new-ad) (:res-type returned-ad)))   
-          (is (= (:res-cost new-ad) (:res-cost returned-ad)))   
-          (is (= (:res-size new-ad) (:res-size returned-ad)))   
-          (is (= (:res-bedrooms new-ad) (:res-bedrooms returned-ad)))   
-          (is (= (:res-features new-ad) (:res-features returned-ad)))   
-          (is (= (:loc-name new-ad) (:loc-name returned-ad)))   
-          (is (= (:loc-street new-ad) (:loc-street returned-ad)))   
-          (is (= (:loc-street-num new-ad) (:loc-street-num returned-ad)))      
-          (is (= (:loc-zip-code new-ad) (:loc-zip-code returned-ad)))      
-          (is (= (:loc-city new-ad) (:loc-city returned-ad)))
-          (let [response (http/get (str url "/api/ads/" (:ad-id returned-ad)))
-                stored-ad (-> response :body (json/parse-string true))]
+              post (partial http/post (str url "/api/ads"))
+              res (post {:form-params new-ad :content-type :transit+json :as :transit+json})
+              ret-ad (:body res)]
+          (is (= (:ad-type new-ad) (:ad-type ret-ad)))
+          (is (= (:ad-start-time new-ad) (:ad-start-time ret-ad)))
+          (is (= (:ad-end-time new-ad) (:ad-end-time ret-ad)))
+          (is (= (:ad-active new-ad) (:ad-active ret-ad)))
+          (is (= (:res-title new-ad) (:res-title ret-ad)))   
+          (is (= (:res-desc new-ad) (:res-desc ret-ad)))   
+          (is (= (:res-type new-ad) (:res-type ret-ad)))   
+          (is (= (:res-cost new-ad) (:res-cost ret-ad)))   
+          (is (= (:res-size new-ad) (:res-size ret-ad)))   
+          (is (= (:res-bedrooms new-ad) (:res-bedrooms ret-ad)))   
+          (is (= (:res-features new-ad) (:res-features ret-ad)))   
+          (is (= (:loc-name new-ad) (:loc-name ret-ad)))   
+          (is (= (:loc-street new-ad) (:loc-street ret-ad)))   
+          (is (= (:loc-street-num new-ad) (:loc-street-num ret-ad)))      
+          (is (= (:loc-zip-code new-ad) (:loc-zip-code ret-ad)))      
+          (is (= (:loc-city new-ad) (:loc-city ret-ad)))
+          (let [get (partial http/get (str url "/api/ads/" (:ad-id ret-ad)))
+                res (get {:accept :transit+json :as :transit+json})
+                stored-ad (:body res)]
             (is (= (:ad-type new-ad) (:ad-type stored-ad)))
             (is (= (:ad-start-time new-ad) (:ad-start-time stored-ad)))
             (is (= (:ad-end-time new-ad) (:ad-end-time stored-ad)))
@@ -103,11 +104,12 @@
                               :loc-street-num "1055"
                               :loc-zip-code "10110"
                               :loc-city "Bangkok"}
-              url (str "http://" (:host web-server) ":" (:port web-server))]
-          (http/post (str url "/api/ads") {:form-params a-new-ad :content-type :json}) 
-          (http/post (str url "/api/ads") {:form-params another-new-ad :content-type :json}) 
-          (let [response (http/get (str url "/api/ads"))
-                stored-ads (-> response :body (json/parse-string true))]
+              url (str "http://" (:host web-server) ":" (:port web-server))
+              post (partial http/post (str url "/api/ads"))] 
+          (post {:form-params a-new-ad :content-type :transit+json :as :transit+json})
+          (post {:form-params another-new-ad :content-type :transit+json :as :transit+json}) 
+          (let [response (http/get (str url "/api/ads") {:as :transit+json})
+                stored-ads (:body response)]
             (is (= 2 (count stored-ads))))))
       (finally
         (component/stop system)))))
@@ -134,11 +136,13 @@
                       :loc-zip-code "10110"
                       :loc-city "Bangkok"}
               url (str "http://" (:host web-server) ":" (:port web-server))
-              create-res (http/post (str url "/api/ads") {:form-params new-ad :content-type :json})
-              returned-ad (-> create-res :body (json/parse-string true))
+              post (partial http/post (str url "/api/ads"))
+              create-res (post {:form-params new-ad :content-type :transit+json :as :transit+json})
+              returned-ad (:body create-res )
               updated-ad (assoc returned-ad :ad-start-time "17:00" :ad-end-time "18:00")
-              update-res (http/put (str url "/api/ads/" (:ad-id updated-ad)) {:form-params updated-ad :content-type :json})
-              stored-ad (-> update-res :body (json/parse-string true))]
+              update (partial http/put (str url "/api/ads/" (:ad-id updated-ad))) 
+              update-res (update {:form-params updated-ad :content-type :transit+json :as :transit+json})
+              stored-ad (:body update-res )]
           (is (= (:ad-id updated-ad) (:ad-id stored-ad)))
           (is (= (:ad-type updated-ad) (:ad-type stored-ad)))
           (is (= (:ad-start-time updated-ad) (:ad-start-time stored-ad)))
@@ -170,8 +174,9 @@
                       :loc-zip-code "10110"
                       :loc-city "Bangkok"}
               url (str "http://" (:host web-server) ":" (:port web-server))
-              create-res (http/post (str url "/api/ads") {:form-params new-ad :content-type :json})
-              stored-ad (-> create-res :body (json/parse-string true))]
+              post (partial http/post (str url "/api/ads")) 
+              create-res (post {:form-params new-ad :content-type :transit+json :as :transit+json})
+              stored-ad (:body create-res)]
           (is (= 204 (:status (http/delete (str url "/api/ads/" (:ad-id stored-ad))))))
           (is (= 404 (:status (http/get (str url "/api/ads/" (:ad-id stored-ad)) {:throw-exceptions false}))))))  
       (finally

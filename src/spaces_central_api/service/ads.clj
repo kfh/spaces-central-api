@@ -27,7 +27,7 @@
 (defn- index-ad [search-api-url ad]
   (let [loc {:id (:ad-id ad) :geocodes {:lat (:geo-lat ad) :lon (:geo-long ad)}}
         post (partial http/post (str search-api-url "/api/locations"))]
-    (post {:form-params loc :content-type :json})))
+    (post {:form-params loc :content-type :transit+json :as :transit+json})))
 
 (defn create-ad [search-api-url conn geocoder ad]
   (let [create-ad (partial storage/create-ad conn)
@@ -53,7 +53,7 @@
 (defn- reindex-ad [search-api-url ad-id ad]
   (let [loc {:id ad-id :geocodes {:lat (:geo-lat ad) :lon (:geo-long ad)}}
         put (partial http/put (str search-api-url "/api/locations/" ad-id))]
-    (put {:form-params loc :content-type :json})))
+    (put {:form-params loc :content-type :transit+json :as :transit+json})))
 
 (defn update-ad [search-api-url conn geocoder ad-id ad]
   (domain/validate-ad-id ad-id)

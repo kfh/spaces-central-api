@@ -1,8 +1,9 @@
 (ns spaces-central-api.web.routes
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [taoensso.timbre :as timbre]
+            [compojure.core :refer [ANY context]] 
             [liberator.core :refer [defresource]]
+            [io.clojure.liberator-transit :refer :all] 
             [com.stuartsierra.component :as component] 
             [spaces-central-api.service.ads :as service])) 
 
@@ -25,20 +26,22 @@
 
 (defresource list-resource [env datomic geocoder]
   :allowed-methods [:get :post]
-  :available-media-types ["application/json"]
+  :available-media-types ["application/transit+json"]
   :handle-ok (fn [_] (get-ads datomic))      
   :post! (fn [ctx] {::res (create-ad env datomic geocoder (:request ctx))})
   :handle-created ::res
+  :as-response (as-response {:allow-json-verbose? false})
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
 (defresource ad-resource [env datomic geocoder ad-id]
   :allowed-methods [:get :put :delete]
-  :available-media-types ["application/json"]
+  :available-media-types ["application/transit+json"]
   :exists? (fn [_] (when-let [ad (get-ad datomic ad-id)] {::res ad}))
   :handle-ok ::res
   :put! (fn [ctx] {::res (update-ad env datomic geocoder ad-id (:request ctx))})
   :handle-created ::res
   :delete! (fn [_] (delete-ad env datomic ad-id))
+  :as-response (as-response {:allow-json-verbose? false})
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
 (defrecord ApiRoutes [env datomic geocoder]
