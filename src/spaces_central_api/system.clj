@@ -6,8 +6,10 @@
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]
-            [spaces-central-api.gateway.geocoder :as geocoder]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]  
+            [spaces-central-api.storage.watcher :as watcher]
+            [spaces-central-api.storage.listener :as listener]    
+            [spaces-central-api.gateway.geocoder :as geocoder]))
 
 (timbre/refer-timbre)
 
@@ -17,12 +19,14 @@
 
 (defn spaces-test-db []
   (component/system-map
-      :datomic (db/datomic-test)))
+    :datomic (db/datomic-test)))
 
 (defn spaces-test-system []
   (component/system-map
     :env (env/environment-test)
     :datomic (db/datomic-test)
+    :watcher (watcher/tx-report-watcher)
+    :listener (listener/tx-listener)
     :geocoder (geocoder/google)
     :api-routes (routes/api-routes)
     :ring-handler (handler/ring-handler)
@@ -33,6 +37,8 @@
     (component/system-map
       :env (env/environment)
       :datomic (db/datomic db-name db-schema)
+      :watcher (watcher/tx-report-watcher)
+      :listener (listener/tx-listener)
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
