@@ -9,13 +9,13 @@
 (timbre/refer-timbre)
 
 (defn- index [search-api-url attrs]
-  (manage 
-    (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
-          location {:id (:ad/public-id attrs) :geocodes geocodes}
-          post (partial http/post (str search-api-url "/api/locations"))]
-      (post {:form-params location :content-type :transit+json :as :transit+json}))
-    (catch Exception ex
-      (warn "External indexing failed: " (.getMessage ex)))))
+  (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
+        location {:id (:ad/public-id attrs) :geocodes geocodes}
+        post (partial http/post (str search-api-url "/api/locations"))]
+    (manage 
+      (post {:form-params location :content-type :transit+json :as :transit+json})
+      (catch Exception ex
+        (warn "External indexing failed: " (.getMessage ex))))))
 
 (defn ->attr-data [txes]
   (->> (d/q 
