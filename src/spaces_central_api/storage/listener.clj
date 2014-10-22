@@ -2,16 +2,20 @@
   (:require [datomic.api :as d]
             [clj-http.client :as http]
             [taoensso.timbre :as timbre]
+            [ribol.core :refer [manage]]
             [com.stuartsierra.component :as component]
-            [clojure.core.async :refer [<! chan tap untap-all go-loop]]))
+            [clojure.core.async :refer [<! chan tap untap go-loop]]))
 
 (timbre/refer-timbre)
 
 (defn- index [search-api-url attrs]
-  (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
-        location {:id (:ad/public-id attrs) :geocodes geocodes}
-        post (partial http/post (str search-api-url "/api/locations"))]
-    (post {:form-params location :content-type :transit+json :as :transit+json})))
+  (manage 
+    (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
+          location {:id (:ad/public-id attrs) :geocodes geocodes}
+          post (partial http/post (str search-api-url "/api/locations"))]
+      (post {:form-params location :content-type :transit+json :as :transit+json}))
+    (catch Exception ex
+      (warn "External indexing failed: " (.getMessage ex)))))
 
 (defn ->attr-data [txes]
   (->> (d/q 
@@ -46,7 +50,7 @@
     (if-not (:tx-tap this)
       this
       (do 
-        (untap-all (:tx-listener watcher))
+        (untap (:tx-listener watcher) (:tx-tap this))
         (dissoc this :tx-tap)))))
 
 (defn tx-listener []

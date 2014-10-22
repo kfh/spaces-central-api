@@ -25,7 +25,9 @@
     (info "Stopping Datomic")
     (if-not (:conn this) 
       this
-      (dissoc this :conn))))
+      (do  
+        (d/release (:conn this))
+        (dissoc this :conn)))))
 
 (defrecord DatomicTest [name schema]
   component/Lifecycle
