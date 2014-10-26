@@ -1,0 +1,4 @@
+{:web-host "127.0.0.1" 
+ :web-port 3000 
+ :db-name "spaces"
+ :db-schema "resources/spaces-central-api-schema.edn"}

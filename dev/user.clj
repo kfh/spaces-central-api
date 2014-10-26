@@ -13,7 +13,8 @@
       (sys/spaces-system 
         {:db-name "spaces" 
          :db-schema "resources/spaces-central-api-schema.edn" 
-         :http-port 9999}))))
+         :web-host "127.0.0.1"
+         :web-port 3333}))))
 
 (defn start []
   (alter-var-root #'system component/start))
