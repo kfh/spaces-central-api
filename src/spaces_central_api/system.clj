@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [taoensso.timbre :as timbre] 
             [spaces-central-api.storage.db :as db]
+            [spaces-central-api.web.sente :as sente]
             [spaces-central-api.env.variables :as env]
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.server :as server]
@@ -32,6 +33,7 @@
     :geocoder (geocoder/google)
     :api-routes (routes/api-routes)
     :ring-handler (handler/ring-handler)
+    :channel-sockets (sente/channel-sockets)
     :web-server (server/web-server-test)))
 
 (defn spaces-system [config]
@@ -45,6 +47,7 @@
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
+      :channel-sockets (sente/channel-sockets)
       :web-server (server/web-server web-host web-port))))
 
 (defn -main [& args]

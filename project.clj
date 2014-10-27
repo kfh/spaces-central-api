@@ -11,6 +11,7 @@
                  [ring-transit "0.1.2"]
                  [im.chit/ribol "0.3.3"]
                  [prismatic/schema "0.3.0"]
+                 [com.taoensso/sente "1.2.0"]
                  [org.clojure/clojure "1.6.0"]
                  [im.chit/hara.common "2.1.3"] 
                  [com.taoensso/timbre "3.3.1"]
