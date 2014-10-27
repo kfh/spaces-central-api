@@ -4,9 +4,10 @@
             [spaces-central-api.storage.db :as db]
             [spaces-central-api.env.variables :as env]
             [spaces-central-api.web.routes :as routes]
-            [spaces-central-api.web.handler :as handler]
             [spaces-central-api.web.server :as server]
             [com.stuartsierra.component :as component]  
+            [spaces-central-api.web.handler :as handler]
+            [spaces-central-api.logger.loggers :as logger]
             [spaces-central-api.storage.watcher :as watcher]
             [spaces-central-api.storage.listener :as listener]    
             [spaces-central-api.gateway.geocoder :as geocoder]))
@@ -27,10 +28,7 @@
 
 (defn spaces-test-system []
   (component/system-map
-    :env (env/environment-test)
     :datomic (db/datomic-test)
-    :watcher (watcher/tx-report-watcher)
-    :listener (listener/tx-listener)
     :geocoder (geocoder/google)
     :api-routes (routes/api-routes)
     :ring-handler (handler/ring-handler)
@@ -39,6 +37,7 @@
 (defn spaces-system [config]
   (let [{:keys [db-name db-schema web-host web-port]} config]
     (component/system-map
+      :logger (logger/rolling-file-appender)
       :env (env/environment)
       :datomic (db/datomic db-name db-schema)
       :watcher (watcher/tx-report-watcher)

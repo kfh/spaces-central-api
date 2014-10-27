@@ -33,23 +33,10 @@
       (:datomic-uri this) (dissoc :datomic-uri)
       (:search-api-url this) (dissoc :search-api-url))))
 
-(defrecord EnvironmentTest []
-  component/Lifecycle 
-  
-  (start [this]
-    (info "Assembling Environment")
-    (if (:search-api-url this)
-      this
-      (assemble-search-api-url this)))
-  
-  (stop [this]
-    (info "Disassembling Environment")
-    (if-not (:search-api-url this)
-      this
-      (dissoc this :search-api-url))))
-
 (defn environment []
-  (map->Environment {}))
+  (component/using 
+    (map->Environment {})
+     [:logger]))
 
-(defn environment-test []
-  (map->EnvironmentTest {}))
+(defn environment-without-logger []
+  (map->Environment {}))
