@@ -5,7 +5,11 @@
 
 (timbre/refer-timbre)
 
-(defrecord ChannelSockets [handler]
+(defn- event-handler [{:keys [ring-req event ?reply-fn]}]
+  (let [[id data] event]
+    (info "Sente event:" event)))
+
+(defrecord ChannelSockets []
   component/Lifecycle
   
   (start [this]
@@ -20,7 +24,7 @@
                :ch-chsk ch-recv
                :chsk-send! send-fn
                :connected-uids connected-uids
-               :router (atom (sente/start-chsk-router! ch-recv handler))))))
+               :router (atom (sente/start-chsk-router! ch-recv event-handler))))))
 
   (stop [this]
     (info "Stopping channel sockets")
@@ -31,6 +35,4 @@
         (dissoc this :router)))))
 
 (defn channel-sockets []
-  (component/using
-    (map->ChannelSockets {})
-    [:ring-handler]))
+  (map->ChannelSockets {}))

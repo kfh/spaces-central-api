@@ -1,10 +1,10 @@
 (ns spaces-central-api.web.routes
   (:require [compojure.route :as route]
             [taoensso.timbre :as timbre]
-            [compojure.core :refer [ANY context]] 
             [liberator.core :refer [defresource]]
             [io.clojure.liberator-transit :refer :all] 
             [com.stuartsierra.component :as component] 
+            [compojure.core :refer [context ANY GET POST]] 
             [spaces-central-api.service.ads :as service])) 
 
 (timbre/refer-timbre)
@@ -44,7 +44,7 @@
   :as-response (as-response {:allow-json-verbose? false})
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
-(defrecord ApiRoutes [datomic geocoder]
+(defrecord ApiRoutes [channel-sockets datomic geocoder]
   component/Lifecycle
 
   (start [this]
@@ -52,6 +52,8 @@
     (if (:routes this)
       this 
       (->> (context "/api" []
+                    (GET  "/chsk" req ((:ring-ajax-get-or-ws-handshake channel-sockets)) req)
+                    (POST "/chsk" req ((:ring-ajax-post channel-sockets)) req) 
                     (ANY "/ads" [] (list-resource datomic geocoder))
                     (ANY "/ads/:ad-id" [ad-id] (ad-resource datomic geocoder ad-id) ))
            (assoc this :routes))))
@@ -65,4 +67,4 @@
 (defn api-routes []
   (component/using
     (map->ApiRoutes {})
-    [:datomic :geocoder]))
+    [:channel-sockets :datomic :geocoder]))
