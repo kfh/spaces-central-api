@@ -33,24 +33,25 @@
   (apply = (map count [keys (select-keys m keys)])))
 
 (defn- process-txes [search-api-url attrs]
-  (when (contains-keys? attrs [:ad/public-id :geocode/latitude :geocode/longitude])
-    (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
-          location {:id (:ad/public-id attrs) :geocodes geocodes}]
-      (if (:added? attrs)
-        (store-location search-api-url location)
-        (delete-location search-api-url location)))))
+  (let [loc-data (apply merge attrs)]
+    (when (contains-keys? loc-data [:ad/public-id :geocode/latitude :geocode/longitude])
+      (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
+            location {:id (:ad/public-id attrs) :geocodes geocodes}]
+        (if (:added? attrs)
+          (store-location search-api-url location)
+          (delete-location search-api-url location))))))
 
 (defn ->attr-data [txes]
   (->> (d/q 
          '[:find ?aname ?v ?added
-           :in $ [[?e ?a ?v _ ?added]]
+           :in $ [[?e ?a ?v _ ?added]] [?aname ...]
            :where 
            [?e ?a ?v _ ?added]
            [?a :db/ident ?aname]]
-         (:db-after txes)
-         (:tx-data txes))
-       (map #(let [[aname val added] %] {aname val :added? added})) 
-       (apply merge)))
+         (d/history (:db-after txes))
+         (:tx-data txes)
+         [:ad/public-id :geocode/latitude :geocode/longitude])
+       (map #(let [[a v added?] %] {a v :added? added?}))))
 
 (defn- take-and-process-txes [search-api-url txes]
   (go-loop []

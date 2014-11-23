@@ -158,6 +158,6 @@
                         :loc-city "Bangkok" 
                         :geo-lat 13.734603
                         :geo-long 100.5639662})]
-          (is (= 2 (count (ads/delete-ad conn (:ad-id new-ad)))))))
+          (is (= 4 (count (ads/delete-ad conn (:ad-id new-ad)))))))
       (finally 
         (component/stop system)))))

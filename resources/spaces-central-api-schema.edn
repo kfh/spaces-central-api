@@ -102,6 +102,7 @@
   :db/ident :real-estate/location
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/one
+  :db/isComponent true
   :db.install/_attribute :db.part/db}
 
  ;; real-estate.type enum values
