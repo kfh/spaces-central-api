@@ -35,9 +35,9 @@
 (defn- process-txes [search-api-url attrs]
   (let [loc-data (apply merge attrs)]
     (when (contains-keys? loc-data [:ad/public-id :geocode/latitude :geocode/longitude])
-      (let [geocodes {:lat (:geocode/latitude attrs) :lon (:geocode/longitude attrs)}
-            location {:id (:ad/public-id attrs) :geocodes geocodes}]
-        (if (:added? attrs)
+      (let [geocodes {:lat (:geocode/latitude loc-data) :lon (:geocode/longitude loc-data)}
+            location {:id (:ad/public-id loc-data) :geocodes geocodes}]
+        (if (:added? loc-data)
           (store-location search-api-url location)
           (delete-location search-api-url location))))))
 
