@@ -44,11 +44,11 @@
 (defn ->attr-data [txes]
   (->> (d/q 
          '[:find ?aname ?v ?added
-           :in $ [[?e ?a ?v _ ?added]] [?aname ...]
+           :in $ $txes [?aname ...]
            :where 
-           [?e ?a ?v _ ?added]
-           [?a :db/ident ?aname]]
-         (d/history (:db-after txes))
+           [?a :db/ident ?aname]
+           [$txes ?e ?a ?v _ ?added]]
+         (:db-after txes)
          (:tx-data txes)
          [:ad/public-id :geocode/latitude :geocode/longitude])
        (map #(let [[a v added?] %] {a v :added? added?}))))
