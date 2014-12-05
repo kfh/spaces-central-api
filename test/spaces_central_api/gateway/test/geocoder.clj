@@ -12,9 +12,9 @@
                (let [address {:loc-street "Sukhumvit Road" :loc-street-num "413" :loc-zip-code "10110" :loc-city "Bangkok"}  
                      result (-> (geocode-address (:type geocoder) address) first)
                      {:keys [lng lat]} (-> result :geometry :location)]
-                 (is (= (:formatted-address result) "413 Thanon Sukhum Vit, Khwaeng Khlong Toei, Khet Khlong Toei, Krung Thep Maha Nakhon 10110, Thailand"))  
-                 (is (= lng 100.5646072))
-                 (is (= lat 13.7341553))))  
+                 (is (= (:formatted-address result) "413 Thanon Sukhum Vit, Khwaeng Phra Khanong, Khet Khlong Toei, Krung Thep Maha Nakhon 10110, Thailand"))  
+                 (is (= lng 100.5812995))
+                 (is (= lat 13.7223646))))  
       (finally
         (component/stop system)))))
 
@@ -28,6 +28,6 @@
                      {:keys [lng lat]} (-> result :geometry :location)]
                  (is (= lng 100.5646072))
                  (is (= lat 13.7341553))
-                 (is (= (:formatted-address result) "14-493 Thanon Sukhum Vit, Khwaeng Khlong Toei, Khet Khlong Toei, Krung Thep Maha Nakhon 10110, Thailand"))))
+                 (is (= (:formatted-address result) "14-493 Sukhumvit Road, Khwaeng Khlong Toei, Khet Khlong Toei, Krung Thep Maha Nakhon 10110, Thailand"))))
       (finally
         (component/stop system)))))
