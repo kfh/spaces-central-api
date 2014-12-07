@@ -12,22 +12,22 @@
   (let [post (partial http/post (str search-api-url "/api/locations"))] 
     (manage 
       (let [id (:id location)
-            res (post {:form-params location :content-type :transit+json :as :transit+json})]
+            res (post {:form-params location :content-type :transit+json 
+                       :as :transit+json :throw-exceptions false})]
         (if (= 201 (:status res))
           (info "Storage of location(" id ") in external system succeeded")
-          (warn "Storage of location(" id ") in external system failed")))
-      (catch Exception ex
-        (warn "External storage of location failed: " (.getMessage ex))))))
+          (warn "Storage of location(" id ") in external system failed:" 
+                {:status (:status res) :error (:body res)}))))))
 
 (defn- delete-location [search-api-url location] 
   (manage 
     (let [id (:id location)
-          res (http/delete (str search-api-url "/api/locations/" id))]
+          ex {:throw-exceptions false}   
+          res (http/delete (str search-api-url "/api/locations/" id) ex)]
       (if (= 204 (:status res))
         (info "Deletion of location(" id ") from external system succeeded")
-        (warn "Deletion of location(" id ") from external system failed")))
-    (catch Exception ex
-      (warn "External deletion of location failed: " (.getMessage ex)))))
+        (warn "Deletion of location(" id ") from external system failed:"
+              {:status (:status res) :error (:body res)})))))
 
 (defn- contains-keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
@@ -35,23 +35,25 @@
 (defn- process-txes [search-api-url attrs]
   (let [loc-data (apply merge attrs)]
     (when (contains-keys? loc-data [:ad/public-id :geocode/latitude :geocode/longitude])
-      (let [geocodes {:lat (:geocode/latitude loc-data) :lon (:geocode/longitude loc-data)}
-            location {:id (:ad/public-id loc-data) :geocodes geocodes}]
+      (let [ts (:ts loc-data)
+            geocodes {:lat (:geocode/latitude loc-data) :lon (:geocode/longitude loc-data)}
+            location {:id (:ad/public-id loc-data) :ts ts :geocodes geocodes}]
         (if (:added? loc-data)
           (store-location search-api-url location)
           (delete-location search-api-url location))))))
 
 (defn ->attr-data [txes]
   (->> (d/q 
-         '[:find ?aname ?v ?added
+         '[:find ?aname ?v ?ts ?added
            :in $ $txes [?aname ...]
            :where 
            [?a :db/ident ?aname]
-           [$txes ?e ?a ?v _ ?added]]
+           [?tx :db/txInstant ?ts]
+           [$txes ?e ?a ?v ?tx ?added]]
          (:db-after txes)
          (:tx-data txes)
          [:ad/public-id :geocode/latitude :geocode/longitude])
-       (map #(let [[a v added?] %] {a v :added? added?}))))
+       (map #(let [[a v ts added?] %] {a v :ts ts :added? added?}))))
 
 (defn- take-and-process-txes [search-api-url txes]
   (go-loop []
