@@ -6,14 +6,13 @@
 
 (defn- squuid [] (str (d/squuid)))
 
-(defn- tempids [] 
-  (repeatedly #(d/tempid :db.part/user))) 
-
 (defn- ->entity [tx-res eid]
-  (->> eid
-       (d/resolve-tempid 
-         (:db-after tx-res) (:tempids tx-res))
-       (d/entity (:db-after tx-res)))) 
+  (d/entity (:db-after tx-res) eid)) 
+
+(defn- resolve-tempids [tx-res eid]
+  (let [tempids (:tempids tx-res)
+        db-after (:db-after tx-res)]
+    (d/resolve-tempid db-after tempids eid)))
 
 (defn kw->string [kw] (clojure.string/join "/" ((juxt namespace name) kw)))
 
@@ -38,20 +37,10 @@
    :geo-lat (-> entity :ad/real-estate :real-estate/location :location/geocode :geocode/latitude)  
    :geo-long (-> entity :ad/real-estate :real-estate/location :location/geocode :geocode/longitude)})    
 
-(defn- get-eid [conn ad-id]
-  (let [db (d/db conn)]
-    (-> (d/q
-          '[:find ?e
-            :in $ ?id
-            :where [?e :ad/public-id ?id]]
-          db
-          ad-id)
-        (ffirst))))
-
 (defn get-ad [conn ad-id]
-  (when-let [eid (get-eid conn ad-id)]
-    (-> (d/entity (d/db conn) eid)
-        (->ad))))
+  (let [ref [:ad/public-id ad-id]] 
+    (when-let [entity (d/entity (d/db conn) ref)]
+      (->ad entity))))
 
 (defn get-ads [conn]
   (let [db (d/db conn)]
@@ -60,50 +49,51 @@
               db)
          (map #(->> (first %) (d/entity db) (->ad))))))
 
-(defn- ->geocode-fact [geo-eid attrs]
-  {:db/id geo-eid
-   :geocode/latitude (:geo-lat attrs)
+(defn- ->geocode-fact [attrs]
+  {:geocode/latitude (:geo-lat attrs)
    :geocode/longitude (:geo-long attrs)})
 
-(defn- ->location-fact [loc-eid geo-eid attrs] 
-  {:db/id loc-eid
-   :location/name (:loc-name attrs)
+(defn- ->location-fact [attrs] 
+  {:location/name (:loc-name attrs)
    :location/street (:loc-street attrs)
    :location/street-number (:loc-street-num attrs)
    :location/zip-code (:loc-zip-code attrs)
    :location/city (:loc-city attrs)
-   :location/geocode geo-eid})
+   :location/geocode (->geocode-fact attrs)})
 
-(defn- ->real-estate-fact [res-eid loc-eid attrs]
-  {:db/id res-eid
-   :real-estate/title (:res-title attrs)
+(defn- ->real-estate-fact [attrs]
+  {:real-estate/title (:res-title attrs)
    :real-estate/description (:res-desc attrs)
    :real-estate/type (:res-type attrs)
    :real-estate/cost (:res-cost attrs)
    :real-estate/size (:res-size attrs)
    :real-estate/bedrooms (:res-bedrooms attrs)
    :real-estate/features (:res-features attrs)
-   :real-estate/location loc-eid})
+   :real-estate/location (->location-fact attrs)})
 
-(defn- ->ad-fact [ad-eid res-eid attrs]
-  {:db/id ad-eid
+(defn- ->ad-fact [ref attrs]
+  {:db/id ref
    :ad/public-id (:ad-id attrs)
    :ad/type (:ad-type attrs)
    :ad/start-time (:ad-start-time attrs)
    :ad/end-time (:ad-end-time attrs)
    :ad/active (:ad-active attrs)
-   :ad/real-estate res-eid})
+   :ad/real-estate (->real-estate-fact attrs)})
 
 (defn- upsert-ad [conn attrs]
-  (let [[ad-eid res-eid loc-eid geo-eid] (tempids)]
-    (-> @(d/transact
-           conn
-           (vector (->geocode-fact geo-eid attrs)
-                   (->location-fact loc-eid geo-eid attrs) 
-                   (->real-estate-fact res-eid loc-eid attrs) 
-                   (->ad-fact ad-eid res-eid attrs)))
-        (->entity ad-eid)
-        (->ad))))
+  (let [ref [:ad/public-id (:ad-id attrs)]]
+    (if (d/entity (d/db conn) ref)
+      (-> @(d/transact
+             conn
+             (vector (->ad-fact ref attrs)))
+          (->entity ref)
+          (->ad))
+      (let [tempid (d/tempid :db.part/user)
+            tx-res @(d/transact conn (vector (->ad-fact tempid attrs)))]
+        (->> tempid  
+             (resolve-tempids tx-res)
+             (->entity tx-res)
+             (->ad))))))
 
 (defn create-ad [conn attrs]
   (upsert-ad conn (assoc attrs :ad-id (squuid))))
@@ -112,9 +102,10 @@
   (upsert-ad conn attrs))
 
 (defn delete-ad [conn ad-id]
-  (when-let [eid (get-eid conn ad-id)]
-    (->> @(d/transact conn [[:db.fn/retractEntity eid]])
-         :tx-data
-         (remove #(:added %))
-         (map :e)
-         (into #{}))))
+  (let [ref [:ad/public-id ad-id]] 
+    (when-let [entity (d/entity (d/db conn) ref)]
+      (->> @(d/transact conn [[:db.fn/retractEntity (:db/id entity)]])
+           :tx-data
+           (remove #(:added %))
+           (map :e)
+           (into #{})))))
