@@ -1,6 +1,7 @@
 (ns spaces-central-api.storage.ads
   (:require [datomic.api :as d] 
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [clojure.walk :refer [prewalk]]))
 
 (timbre/refer-timbre)
 
@@ -14,28 +15,15 @@
         db-after (:db-after tx-res)]
     (d/resolve-tempid db-after tempids eid)))
 
-(defn kw->string [kw] (clojure.string/join "/" ((juxt namespace name) kw)))
-
 (defn- ->ad [entity]
-  {:ad-id (:ad/public-id entity)
-   :ad-type (kw->string (:ad/type entity))
-   :ad-start-time (:ad/start-time entity)
-   :ad-end-time (:ad/end-time entity)
-   :ad-active (:ad/active entity)
-   :res-title (-> entity :ad/real-estate :real-estate/title)
-   :res-desc (-> entity :ad/real-estate :real-estate/description)
-   :res-type (kw->string (-> entity :ad/real-estate :real-estate/type))
-   :res-cost (-> entity :ad/real-estate :real-estate/cost)
-   :res-size (-> entity :ad/real-estate  :real-estate/size)
-   :res-bedrooms (-> entity :ad/real-estate :real-estate/bedrooms)
-   :res-features (mapv kw->string (-> entity :ad/real-estate :real-estate/features))
-   :loc-name (-> entity :ad/real-estate :real-estate/location :location/name) 
-   :loc-street (-> entity :ad/real-estate :real-estate/location :location/street)  
-   :loc-street-num (-> entity :ad/real-estate :real-estate/location :location/street-number)
-   :loc-zip-code (-> entity :ad/real-estate :real-estate/location :location/zip-code)  
-   :loc-city (-> entity :ad/real-estate :real-estate/location :location/city)    
-   :geo-lat (-> entity :ad/real-estate :real-estate/location :location/geocode :geocode/latitude)  
-   :geo-long (-> entity :ad/real-estate :real-estate/location :location/geocode :geocode/longitude)})    
+  (-> entity
+      (d/touch)
+      (pr-str)
+      (read-string)
+      (as-> realized-entity
+        (prewalk 
+          #(if (map? %) (dissoc % :db/id) %) 
+          realized-entity))))    
 
 (defn get-ad [conn ad-id]
   (let [ref [:ad/public-id ad-id]] 
@@ -47,38 +35,41 @@
     (->> (d/q '[:find ?e
                 :where [?e :ad/public-id]]
               db)
-         (map #(->> (first %) (d/entity db) (->ad))))))
+         (map 
+           #(->> (first %) 
+                 (d/entity db) 
+                 (->ad))))))
 
 (defn- ->geocode-fact [attrs]
-  {:geocode/latitude (:geo-lat attrs)
-   :geocode/longitude (:geo-long attrs)})
+  {:geocode/latitude (:geocode/latitude attrs)
+   :geocode/longitude (:geocode/longitude attrs)})
 
 (defn- ->location-fact [attrs] 
-  {:location/name (:loc-name attrs)
-   :location/street (:loc-street attrs)
-   :location/street-number (:loc-street-num attrs)
-   :location/zip-code (:loc-zip-code attrs)
-   :location/city (:loc-city attrs)
-   :location/geocode (->geocode-fact attrs)})
+  {:location/name (:location/name attrs)
+   :location/street (:location/street attrs)
+   :location/street-number (:location/street-number attrs)
+   :location/zip-code (:location/zip-code attrs)
+   :location/city (:location/city attrs)
+   :location/geocode (->geocode-fact (:location/geocode attrs))})
 
 (defn- ->real-estate-fact [attrs]
-  {:real-estate/title (:res-title attrs)
-   :real-estate/description (:res-desc attrs)
-   :real-estate/type (:res-type attrs)
-   :real-estate/cost (:res-cost attrs)
-   :real-estate/size (:res-size attrs)
-   :real-estate/bedrooms (:res-bedrooms attrs)
-   :real-estate/features (:res-features attrs)
-   :real-estate/location (->location-fact attrs)})
+  {:real-estate/title (:real-estate/title attrs)
+   :real-estate/description (:real-estate/description attrs)
+   :real-estate/type (:real-estate/type attrs)
+   :real-estate/cost (:real-estate/cost attrs)
+   :real-estate/size (:real-estate/size attrs)
+   :real-estate/bedrooms (:real-estate/bedrooms attrs)
+   :real-estate/features (:real-estate/features attrs)
+   :real-estate/location (->location-fact (:real-estate/location attrs))})
 
 (defn- ->ad-fact [ref attrs]
   {:db/id ref
-   :ad/public-id (:ad-id attrs)
-   :ad/type (:ad-type attrs)
-   :ad/start-time (:ad-start-time attrs)
-   :ad/end-time (:ad-end-time attrs)
-   :ad/active (:ad-active attrs)
-   :ad/real-estate (->real-estate-fact attrs)})
+   :ad/public-id (:ad/public-id attrs)
+   :ad/type (:ad/type attrs)
+   :ad/start-time (:ad/start-time attrs)
+   :ad/end-time (:ad/end-time attrs)
+   :ad/active (:ad/active attrs)
+   :ad/real-estate (->real-estate-fact (:ad/real-estate attrs))})
 
 (defn- upsert-ad [conn attrs]
   (let [ref [:ad/public-id (:ad-id attrs)]]
@@ -96,7 +87,7 @@
              (->ad))))))
 
 (defn create-ad [conn attrs]
-  (upsert-ad conn (assoc attrs :ad-id (squuid))))
+  (upsert-ad conn (assoc attrs :ad/public-id (squuid))))
 
 (defn update-ad [conn attrs]
   (upsert-ad conn attrs))

@@ -1,8 +1,8 @@
 (ns spaces-central-api.storage.test.ads
   (:require [spaces-central-api.storage.ads :as ads]  
-            [spaces-central-api.system :refer [spaces-test-db]]  
             [clojure.test :refer [deftest testing is]]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [spaces-central-api.system :refer [spaces-test-db]]))
 
 (deftest create-and-get-ad
   (let [system (component/start (spaces-test-db))
@@ -10,44 +10,56 @@
         {:keys [conn]} datomic]
     (try 
       (testing "Creating and retreiving an ad"
-        (let [new-ad (ads/create-ad 
+        (let [geocode {:geocode/latitude 13.734603
+                       :geocode/longitude 100.5639662}
+              location {:location/name "Sukhumvit Road"
+                        :location/street "Sukhumvit Road"
+                        :location/street-number "413"
+                        :location/zip-code "10110"
+                        :location/city "Bangkok"
+                        :location/geocode geocode}
+              real-estate {:real-estate/title "New apartment in central Sukhumvit"                         
+                           :real-estate/description "Beatiful apartment with perfect location.."
+                           :real-estate/type :real-estate.type/apartment
+                           :real-estate/cost "100 000 "
+                           :real-estate/size "95 m2"
+                           :real-estate/bedrooms "3"
+                           :real-estate/features [:real-estate.feature/elevator :real-estate.feature/aircondition]
+                           :real-estate/location location}
+              new-ad (ads/create-ad 
                        conn 
-                       {:ad-type :ad.type/real-estate 
-                        :ad-start-time "14:45" 
-                        :ad-end-time "20:00" 
-                        :ad-active true
-                        :res-title "New apartment in central Sukhumvit"
-                        :res-desc "Beatiful apartment with perfect location.."
-                        :res-type :real-estate.type/apartment
-                        :res-cost "100 000 "
-                        :res-size "95 m2"
-                        :res-bedrooms "3"
-                        :res-features [:real-estate.feature/elevator :real-estate.feature/aircondition]
-                        :loc-name "Sukhumvit Road"
-                        :loc-street "Sukhumvit Road"
-                        :loc-street-num "413"
-                        :loc-zip-code "10110"
-                        :loc-city "Bangkok" 
-                        :geo-lat 13.734603
-                        :geo-long 100.5639662})]
-          (let [stored-ad (ads/get-ad conn (:ad-id new-ad))]
-            (is (= (:ad-id new-ad) (:ad-id stored-ad)))   
-            (is (= (:ad-type new-ad) (:ad-type stored-ad)))
-            (is (= (:ad-start-time new-ad) (:ad-start-time stored-ad)))
-            (is (= (:ad-end-time new-ad) (:ad-end-time stored-ad)))
-            (is (= (:ad-active new-ad) (:ad-active stored-ad)))
-            (is (= (:res-title new-ad) (:res-title stored-ad)))   
-            (is (= (:res-desc new-ad) (:res-desc stored-ad)))   
-            (is (= (:res-type new-ad) (:res-type stored-ad)))   
-            (is (= (:res-cost new-ad) (:res-cost stored-ad)))   
-            (is (= (:res-size new-ad) (:res-size stored-ad)))   
-            (is (= (:res-bedrooms new-ad) (:res-bedrooms stored-ad)))   
-            (is (= (:res-features new-ad) (:res-features stored-ad)))   
-            (is (= (:loc-name new-ad) (:loc-name stored-ad)))   
-            (is (= (:loc-street new-ad) (:loc-street stored-ad)))   
-            (is (= (:loc-street-num new-ad) (:loc-street-num stored-ad)))      
-            (is (= (:loc-zip-code new-ad) (:loc-zip-code stored-ad)))      
-            (is (= (:loc-city new-ad) (:loc-city stored-ad))))))      
+                       {:ad/type :ad.type/real-estate 
+                        :ad/start-time "14:45" 
+                        :ad/end-time "20:00" 
+                        :ad/active true
+                        :ad/real-estate real-estate})]
+
+          (let [stored-ad (ads/get-ad conn (:ad/public-id new-ad))]
+            (is (= (:ad/public-id new-ad) (:ad/public-id stored-ad)))   
+            (is (= (:ad/type new-ad) (:ad/type stored-ad)))
+            (is (= (:ad/start-time new-ad) (:ad/start-time stored-ad)))
+            (is (= (:ad/end-time new-ad) (:ad/end-time stored-ad)))
+            (is (= (:ad/active new-ad) (:ad/active stored-ad)))
+            (let [new-res (:ad/real-estate new-ad)
+                  stored-res (:ad/real-estate stored-ad)]
+              (is (= (:real-estate/title new-res) (:real-estate/title stored-res)))   
+              (is (= (:real-estate/description new-res) (:real-estate/description stored-res)))   
+              (is (= (:real-estate/type new-res) (:real-estate/type stored-res)))   
+              (is (= (:real-estate/cost new-res) (:real-estate/cost stored-res)))   
+              (is (= (:real-estate/size new-res) (:real-estate/size stored-res)))   
+              (is (= (:real-estate/bedrooms new-res) (:real-estate/bedrooms stored-res)))   
+              (is (= (:real-estate/features new-res) (:real-estate/features stored-res)))   
+              (let [new-loc (:real-estate/location new-res)
+                    stored-loc (:real-estate/location stored-res)]
+                (is (= (:location/name new-loc) (:location/name stored-loc)))   
+                (is (= (:location/street new-loc) (:location/street stored-loc)))   
+                (is (= (:location/street-number new-loc) (:location/street-number stored-loc)))      
+                (is (= (:location/zip-code new-loc) (:location/zip-code stored-loc)))      
+                (is (= (:location/city new-loc) (:location/city stored-loc)))
+                (let [new-geo (:location/geocode new-loc)
+                      stored-geo (:location/geocode stored-loc)]
+                  (is (= (:geocode/latitude new-geo) (:geocode/latitude stored-geo)))   
+                  (is (= (:geocode/longitude new-geo) (:geocode/longitude stored-geo)))))))))      
       (finally
         (component/stop system)))))
 
@@ -57,42 +69,52 @@
         {:keys [conn]} datomic]
     (try 
       (testing "Creating and retreiving all ads"
-        (ads/create-ad conn {:ad-type :ad.type/real-estate 
-                             :ad-start-time "14:45" 
-                             :ad-end-time "20:00" 
-                             :ad-active true
-                             :res-title "New apartment in central Sukhumvit"
-                             :res-desc "Beatiful apartment with perfect location.."
-                             :res-type :real-estate.type/apartment
-                             :res-cost "100 000"
-                             :res-size "95 m2"
-                             :res-bedrooms "3"
-                             :res-features [:real-estate.feature/elevator :real-estate.feature/aircondition]
-                             :loc-name "Sukhumvit Road"
-                             :loc-street "Sukhumvit Road"
-                             :loc-street-num "413"
-                             :loc-zip-code "10110"
-                             :loc-city "Bangkok" 
-                             :geo-lat 13.734603
-                             :geo-long 100.5639662})
-        (ads/create-ad conn {:ad-type :ad.type/real-estate 
-                             :ad-start-time "09:00" 
-                             :ad-end-time "19:00" 
-                             :ad-active true
-                             :res-title "Small and cosy apartment close to Lebua"
-                             :res-desc "Sourrounded by the huge Lebua tower u find.."
-                             :res-type :real-estate.type/apartment
-                             :res-cost "245 000"
-                             :res-size "72 m2"
-                             :res-bedrooms "2"
-                             :res-features [:real-estate.feature/elevator :real-estate.feature/aircondition]
-                             :loc-name "Silom Road"
-                             :loc-street "Silom Road"
-                             :loc-street-num "1055"
-                             :loc-zip-code "10110"
-                             :loc-city "Bangkok" 
-                             :geo-lat 13.7315902
-                             :geo-long 100.56822}) 
+        (let [geocode {:geocode/latitude 13.734603
+                       :geocode/longitude 100.5639662}
+              location {:location/name "Sukhumvit Road"
+                        :location/street "Sukhumvit Road"
+                        :location/street-number "413"
+                        :location/zip-code "10110"
+                        :location/city "Bangkok"
+                        :location/geocode geocode}
+              real-estate {:real-estate/title "New apartment in central Sukhumvit"                         
+                           :real-estate/description "Beatiful apartment with perfect location.."
+                           :real-estate/type :real-estate.type/apartment
+                           :real-estate/cost "100 000 "
+                           :real-estate/size "95 m2"
+                           :real-estate/bedrooms "3"
+                           :real-estate/features [:real-estate.feature/elevator :real-estate.feature/aircondition]
+                           :real-estate/location location}]
+          (ads/create-ad 
+            conn 
+            {:ad/type :ad.type/real-estate 
+             :ad/start-time "14:45"  
+             :ad/end-time "20:00"  
+             :ad/active true
+             :ad/real-estate real-estate}))
+        (let [geocode {:geocode/latitude 13.7315902 
+                       :geocode/longitude 100.56822}
+              location {:location/name "Silom Road" 
+                        :location/street "Silom Road" 
+                        :location/street-number "1055" 
+                        :location/zip-code "10110" 
+                        :location/city "Bangkok"  
+                        :location/geocode geocode}
+              real-estate {:real-estate/title "Small and cosy apartment close to Lebua" 
+                           :real-estate/description "Sourrounded by the huge Lebua tower u find.." 
+                           :real-estate/type :real-estate.type/apartment
+                           :real-estate/cost "245 000" 
+                           :real-estate/size "72 m2" 
+                           :real-estate/bedrooms "2" 
+                           :real-estate/features [:real-estate.feature/elevator :real-estate.feature/aircondition]
+                           :real-estate/location location}]
+          (ads/create-ad 
+            conn 
+            {:ad/type :ad.type/real-estate 
+             :ad/start-time "09:00"  
+             :ad/end-time "19:00"  
+             :ad/active true
+             :ad/real-estate real-estate}))
         (is (= 2 (count (ads/get-ads conn)))))
       (finally
         (component/stop system)))))
@@ -103,32 +125,41 @@
         {:keys [conn]} datomic]
     (try 
       (testing "Creating and updating an ad"
-        (let [new-ad (ads/create-ad 
+        (let [geocode {:geocode/latitude 13.7315902 
+                       :geocode/longitude 100.56822}
+              location {:location/name "Silom Road" 
+                        :location/street "Silom Road" 
+                        :location/street-number "1055" 
+                        :location/zip-code "10110" 
+                        :location/city "Bangkok"  
+                        :location/geocode geocode}
+              real-estate {:real-estate/title "Small and cosy apartment close to Lebua" 
+                           :real-estate/description "Sourrounded by the huge Lebua tower u find.." 
+                           :real-estate/type :real-estate.type/apartment
+                           :real-estate/cost "245 000" 
+                           :real-estate/size "72 m2" 
+                           :real-estate/bedrooms "2" 
+                           :real-estate/features [:real-estate.feature/elevator :real-estate.feature/aircondition]
+                           :real-estate/location location}
+              new-ad (ads/create-ad 
                        conn 
-                       {:ad-type :ad.type/real-estate 
-                        :ad-start-time "09:00" 
-                        :ad-end-time "19:00" 
-                        :ad-active true
-                        :res-title "Small and cosy apartment close to Lebua"
-                        :res-desc "Sourrounded by the huge Lebua tower u find.."
-                        :res-type :real-estate.type/apartment
-                        :res-cost "245 000"
-                        :res-size "72 m2"
-                        :res-bedrooms "2"
-                        :res-features [:real-estate.feature/elevator :real-estate.feature/aircondition]
-                        :loc-name "Silom Road"
-                        :loc-street "Silom Road"
-                        :loc-street-num "1055"
-                        :loc-zip-code "10110"
-                        :loc-city "Bangkok" 
-                        :geo-lat 13.7315902
-                        :geo-long 100.56822})]
-          (let [updated-ad (assoc new-ad :ad-start-time "12:00" :res-title "Not so cosy apartment" :loc-name "Not Silom Road")
+                       {:ad/type :ad.type/real-estate 
+                        :ad/start-time "09:00"  
+                        :ad/end-time "19:00"  
+                        :ad/active true
+                        :ad/real-estate real-estate})]
+          (let [updated-ad (-> (assoc new-ad :ad/start-time "12:00") 
+                               (assoc-in [:ad/real-estate :real-estate/title] "Not so cosy apartment")
+                               (assoc-in [:ad/real-estate :real-estate/location :location/name] "Not Silom Road"))             
                 _ (ads/update-ad conn updated-ad)
-                stored-ad (ads/get-ad conn (:ad-id updated-ad))]
-            (is (= (:ad-start-time updated-ad) (:ad-start-time stored-ad)))
-            (is (= (:res-title updated-ad) (:res-title stored-ad)))
-            (is (= (:loc-name updated-ad) (:loc-name stored-ad))))))
+                stored-ad (ads/get-ad conn (:ad/public-id updated-ad))]
+            (is (= (:ad/start-time updated-ad) (:ad/start-time stored-ad)))
+            (let [updated-res (:ad/real-estate updated-ad)
+                  stored-res (:ad/real-estate stored-ad)]
+              (is (= (:real-estate/title updated-res) (:real-estate/title stored-res)))
+              (let [updated-loc (:real-estate/location updated-res)
+                    stored-loc (:real-estate/location stored-res)]
+                (is (= (:location/name updated-loc) (:location/name stored-loc))))))))
       (finally
         (component/stop system)))))
 
@@ -138,26 +169,30 @@
         {:keys [conn]} datomic]
     (try
       (testing "Creating and deleting an ad"
-        (let [new-ad (ads/create-ad 
+        (let [geocode {:geocode/latitude 13.734603
+                       :geocode/longitude 100.5639662}
+              location {:location/name "Sukhumvit Road"
+                        :location/street "Sukhumvit Road"
+                        :location/street-number "413"
+                        :location/zip-code "10110"
+                        :location/city "Bangkok"
+                        :location/geocode geocode}
+              real-estate {:real-estate/title "New apartment in central Sukhumvit"                         
+                           :real-estate/description "Beatiful apartment with perfect location.."
+                           :real-estate/type :real-estate.type/apartment
+                           :real-estate/cost "100 000 "
+                           :real-estate/size "95 m2"
+                           :real-estate/bedrooms "3"
+                           :real-estate/features [:real-estate.feature/elevator :real-estate.feature/aircondition]
+                           :real-estate/location location}
+              new-ad (ads/create-ad 
                        conn 
-                       {:ad-type :ad.type/real-estate 
-                        :ad-start-time "14:45" 
-                        :ad-end-time "20:00" 
-                        :ad-active true
-                        :res-title "New apartment in central Sukhumvit"
-                        :res-desc "Beatiful apartment with perfect location.."
-                        :res-type :real-estate.type/apartment
-                        :res-cost "100 000 "
-                        :res-size "95 m2"
-                        :res-bedrooms "3"
-                        :res-features [:real-estate.feature/elevator :real-estate.feature/aircondition]
-                        :loc-name "Sukhumvit Road"
-                        :loc-street "Sukhumvit Road"
-                        :loc-street-num "413"
-                        :loc-zip-code "10110"
-                        :loc-city "Bangkok" 
-                        :geo-lat 13.734603
-                        :geo-long 100.5639662})]
-          (is (= 4 (count (ads/delete-ad conn (:ad-id new-ad)))))))
+                       {:ad/type :ad.type/real-estate 
+                        :ad/start-time "14:45"  
+                        :ad/end-time "20:00"  
+                        :ad/active true
+                        :ad/real-estate real-estate})]
+          (is (= 4 (count (ads/delete-ad conn (:ad/public-id new-ad)))))
+          (is (nil? (ads/get-ad conn (:ad/public-id new-ad))))))
       (finally 
         (component/stop system)))))
