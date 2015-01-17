@@ -1,9 +1,10 @@
 (ns spaces-central-api.service.ads
-    (:require [ribol.core :refer [raise]]
-              [taoensso.timbre :as timbre]
-              [spaces-central-api.domain.ads :as domain]  
-              [spaces-central-api.storage.ads :as storage]  
-              [spaces-central-api.service.geocodes :as geocodes]))    
+  (:require [ribol.core :refer [raise]]
+            [taoensso.timbre :as timbre]
+            [hara.data :refer [dissoc-in]]
+            [spaces-central-api.domain.ads :as domain]  
+            [spaces-central-api.storage.ads :as storage]  
+            [spaces-central-api.service.geocodes :as geocodes]))    
 
 (timbre/refer-timbre)
 
@@ -14,43 +15,42 @@
   (storage/get-ads conn))
 
 (defn- add-geocodes [geocoder ad]
-  (if-let [geocodes (->> ad (geocodes/geocode-address geocoder))]
-    (let [lat (-> geocodes :geometry :location :lat) 
-          long (-> geocodes :geometry :location :lng)]
-      (assoc ad :geo-lat lat :geo-long long))
+  (if-let [geo (->> ad (geocodes/geocode-address geocoder))]
+    (let [lat (-> geo :geometry :location :lat) 
+          long (-> geo :geometry :location :lng)
+          geocode {:geocode/latitude lat :geocode/longitude long}]
+      (assoc-in ad [:ad/real-estate :real-estate/location :location/geocode] geocode))
     (raise [:add-geocodes {:value ad}])))
 
 (defn create-ad [conn geocoder ad]
   (let [create-ad (partial storage/create-ad conn)
         add-geocodes (partial add-geocodes geocoder) 
-        val-ad (->> ad (domain/coerce-ad) (domain/validate-ad))]
-    (if-let [loc (geocodes/find-geocode conn val-ad)]   
-      (let [{:keys [geo-lat geo-long]} loc] 
-        (-> val-ad 
-            (assoc :geo-lat geo-lat :geo-long geo-long)
-            (create-ad)
-            (dissoc ad :geo-lat :geo-long)))
+        val-ad (domain/validate-ad ad)]
+    (if-let [geocode (geocodes/find-geocode conn val-ad)]   
+      (-> val-ad 
+          (assoc-in [:ad/real-estate :real-estate/location :location/geocode] geocode) 
+          (create-ad)
+          (dissoc-in [:ad/real-estate :real-estate/location :location/geocode]))
       (-> val-ad
           (add-geocodes)  
           (create-ad)
-          (dissoc ad :geo-lat :geo-long)))))
+          (dissoc-in [:ad/real-estate :real-estate/location :location/geocode])))))
 
 (defn update-ad [conn geocoder ad-id ad]
   (domain/validate-ad-id ad-id)
   (let [update-ad (partial storage/update-ad conn)
         add-geocodes (partial add-geocodes geocoder)
-        val-ad (->> ad (domain/coerce-ad) (domain/validate-ad))] 
-    (if-let [loc (geocodes/find-geocode conn val-ad)]
-      (let [{:keys [geo-lat geo-long]} loc] 
-        (-> val-ad
-            (assoc :ad-id ad-id :geo-lat geo-lat :geo-long geo-long)  
-            (update-ad)
-            (dissoc ad :geo-lat :geo-long)))
+        val-ad (domain/validate-ad ad)] 
+    (if-let [geocode (geocodes/find-geocode conn val-ad)]
       (-> val-ad
-          (assoc :ad-id ad-id)
+          (assoc-in [:ad/real-estate :real-estate/location :location/geocode] geocode) 
+          (update-ad)
+          (dissoc-in [:ad/real-estate :real-estate/location :location/geocode]))
+      (-> val-ad
+          (assoc :ad/public-id ad-id)
           (add-geocodes)  
           (update-ad)
-          (dissoc ad :geo-lat :geo-long)))))
+          (dissoc-in [:ad/real-estate :real-estate/location :location/geocode])))))
 
 (defn delete-ad [conn ad-id]
   (storage/delete-ad conn (domain/validate-ad-id ad-id)))

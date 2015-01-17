@@ -1,7 +1,6 @@
 (ns spaces-central-api.storage.geocodes
   (:require [datomic.api :as d] 
-            [taoensso.timbre :as timbre]
-            [spaces-central-api.domain.locations :as domain])) 
+            [taoensso.timbre :as timbre]))
 
 (timbre/refer-timbre)
 
