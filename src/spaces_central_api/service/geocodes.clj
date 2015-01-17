@@ -1,7 +1,7 @@
 (ns spaces-central-api.service.geocodes
   (:require [taoensso.timbre :as timbre]
-            [spaces-central-api.gateway.geocoder :as geocoder]  
-            [spaces-central-api.storage.locations :as loc-storage]))
+            [spaces-central-api.storage.geocodes :as storage]
+            [spaces-central-api.gateway.geocoder :as geocoder]))
 
 (timbre/refer-timbre)
 
@@ -11,5 +11,5 @@
 (defn geocode-location [geocoder location]
   (geocoder/geocode-location geocoder location))
 
-(defn find-location [conn ad]
-  (loc-storage/find-location conn ad))
+(defn find-geocode [conn ad]
+  (storage/find-geocode conn ad))
