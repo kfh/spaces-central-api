@@ -38,7 +38,7 @@
           (let [stored-ad (storage/get-ad conn (:ad/public-id new-ad))]
             (is (= (:ad/public-id new-ad) (:ad/public-id stored-ad)))
             (let [stored-geo (-> stored-ad :ad/real-estate :real-estate/location :location/geocode)
-                  found-geo (geocodes/find-geocode conn location)]
+                  found-geo (geocodes/find-geocode conn (dissoc location :location/geocode))]
               (is (= (:geocode/latitude stored-geo) (:geocode/latitude found-geo)))
               (is (= (:geocode/longitude stored-geo) (:geocode/longitude found-geo)))))))
       (finally
