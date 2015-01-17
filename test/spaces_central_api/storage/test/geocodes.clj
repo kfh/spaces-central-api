@@ -11,7 +11,7 @@
         {:keys [datomic]} system
         {:keys [conn]} datomic]
     (try 
-      (testing "Creating ad and finding location"
+      (testing "Creating ad and finding geocode"
         (let [geocode {:geocode/latitude 13.734603
                        :geocode/longitude 100.5639662}
               location {:location/name "Sukhumvit Road"
