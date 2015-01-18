@@ -4,9 +4,9 @@
 
 (def res-types (s/enum :real-estate.type/apartment :real-estate.type/house)) 
 
-(def features (s/enum :real-estate.feature/elevator :real-estate.feature/aircondition 
-                      :real-estate.feature/fireplace :real-estate.feature/lawn 
-                      :real-estate.feature/garage)) 
+(def features [(s/enum :real-estate.feature/elevator :real-estate.feature/aircondition 
+                       :real-estate.feature/fireplace :real-estate.feature/lawn 
+                       :real-estate.feature/garage)]) 
 
 (def Location
   {(s/required-key :location/name) s/Str
@@ -33,8 +33,16 @@
    (s/required-key :ad/active) boolean
    (s/required-key :ad/real-estate) RealEstate})
 
+(defn- coerce [ad]
+  (update-in 
+    ad [:ad/real-estate :real-estate/features] 
+    (fn [coll] 
+      (if (set? coll) 
+        (vec coll) 
+        coll))))
+
 (defn validate-ad [ad]
-  (s/validate Ad ad))
+  (s/validate Ad (coerce ad)))
 
 (defn validate-ad-id [ad-id]
   (s/validate s/Str ad-id))

@@ -16,10 +16,12 @@
   (service/get-ads (:conn db)))
 
 (defn- create-ad [db geocoder req]
-  (service/create-ad (:conn db) (:type geocoder) (:params req)))
+  (let [params (read-string (:transit-params req))] 
+    (service/create-ad (:conn db) (:type geocoder) params)))
 
 (defn- update-ad [db geocoder ad-id req]
-  (service/update-ad (:conn db) (:type geocoder) ad-id (:params req)))
+  (let [params (read-string (:transit-params req))] 
+    (service/update-ad (:conn db) (:type geocoder) ad-id params)))
 
 (defn- delete-ad [db ad-id]
   (service/delete-ad (:conn db) ad-id))

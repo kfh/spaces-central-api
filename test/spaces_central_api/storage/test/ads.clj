@@ -33,7 +33,6 @@
                         :ad/end-time "20:00" 
                         :ad/active true
                         :ad/real-estate real-estate})]
-
           (let [stored-ad (ads/get-ad conn (:ad/public-id new-ad))]
             (is (= (:ad/public-id new-ad) (:ad/public-id stored-ad)))   
             (is (= (:ad/type new-ad) (:ad/type stored-ad)))

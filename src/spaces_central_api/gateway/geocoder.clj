@@ -47,12 +47,12 @@
 (defmulti geocode-location (fn [type location] type))
 
 (defmethod geocode-address :google [_ address]
- (let [{:keys [loc-street loc-street-num loc-zip-code loc-city]} address]
-  (google/geocode-address (str loc-street  " " loc-street-num ", " loc-zip-code " " loc-city))))
+ (let [{:keys [:location/street :location/street-number :location/zip-code :location/city]} address]
+  (google/geocode-address (str street  " " street-number ", " zip-code " " city))))
 
 (defmethod geocode-address :bing [_ address]
- (let [{:keys [loc-street loc-street-num loc-zip-code loc-city]} address]
-  (bing/geocode-address (str loc-street  " " loc-street-num ", " loc-zip-code " " loc-city))))
+ (let [{:keys [:location/street :location/street-number :location/zip-code :location/city]} address]
+  (bing/geocode-address (str street  " " street-number ", " zip-code " " city))))
 
 (defmethod geocode-location :google [_ location]
   (google/geocode-location (str (:lat location) "," (:long location))))

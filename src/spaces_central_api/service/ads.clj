@@ -15,24 +15,26 @@
   (storage/get-ads conn))
 
 (defn- add-geocodes [geocoder ad]
-  (if-let [geo (->> ad (geocodes/geocode-address geocoder))]
-    (let [lat (-> geo :geometry :location :lat) 
-          long (-> geo :geometry :location :lng)
-          geocode {:geocode/latitude lat :geocode/longitude long}]
-      (assoc-in ad [:ad/real-estate :real-estate/location :location/geocode] geocode))
-    (raise [:add-geocodes {:value ad}])))
+  (let [location (-> ad :ad/real-estate :real-estate/location)]
+    (if-let [ geo (->> location (geocodes/geocode-address geocoder))]
+      (let [lat (-> geo :geometry :location :lat) 
+            long (-> geo :geometry :location :lng)
+            geocode {:geocode/latitude lat :geocode/longitude long}]
+        (assoc-in ad [:ad/real-estate :real-estate/location :location/geocode] geocode))
+      (raise [:add-geocodes {:value ad}]))))
 
 (defn create-ad [conn geocoder ad]
   (let [create-ad (partial storage/create-ad conn)
         add-geocodes (partial add-geocodes geocoder) 
-        val-ad (domain/validate-ad ad)]
-    (if-let [geocode (geocodes/find-geocode conn val-ad)]   
+        val-ad (domain/validate-ad ad)
+        location (-> val-ad :ad/real-estate :real-estate/location)]
+    (if-let [geocode (geocodes/find-geocode conn location)]   
       (-> val-ad 
           (assoc-in [:ad/real-estate :real-estate/location :location/geocode] geocode) 
           (create-ad)
           (dissoc-in [:ad/real-estate :real-estate/location :location/geocode]))
       (-> val-ad
-          (add-geocodes)  
+          (add-geocodes)
           (create-ad)
           (dissoc-in [:ad/real-estate :real-estate/location :location/geocode])))))
 
@@ -40,8 +42,9 @@
   (domain/validate-ad-id ad-id)
   (let [update-ad (partial storage/update-ad conn)
         add-geocodes (partial add-geocodes geocoder)
-        val-ad (domain/validate-ad ad)] 
-    (if-let [geocode (geocodes/find-geocode conn val-ad)]
+        val-ad (domain/validate-ad ad)
+        location (-> val-ad :ad/real-estate :real-estate/location)] 
+    (if-let [geocode (geocodes/find-geocode conn location)]
       (-> val-ad
           (assoc-in [:ad/real-estate :real-estate/location :location/geocode] geocode) 
           (update-ad)
