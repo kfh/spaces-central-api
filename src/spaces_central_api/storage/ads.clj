@@ -35,10 +35,7 @@
     (->> (d/q '[:find ?e
                 :where [?e :ad/public-id]]
               db)
-         (map 
-           #(->> (first %) 
-                 (d/entity db) 
-                 (->ad))))))
+         (map #(->> (first %) (d/entity db) (->ad))))))
 
 (defn- ->geocode-fact [attrs]
   {:geocode/latitude (:geocode/latitude attrs)
