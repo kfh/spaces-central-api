@@ -7,11 +7,12 @@
             [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.server :as server]
             [com.stuartsierra.component :as component]  
+            [spaces-central-api.storage.queue :as queue]    
             [spaces-central-api.web.handler :as handler]
             [spaces-central-api.logger.loggers :as logger]
-            [spaces-central-api.storage.watcher :as watcher]
-            [spaces-central-api.storage.listener :as listener]    
-            [spaces-central-api.gateway.geocoder :as geocoder]))
+            [spaces-central-api.gateway.geocoder :as geocoder]
+            [spaces-central-api.storage.publisher :as publisher]
+            [spaces-central-api.storage.subscriber :as subscriber]))
 
 (timbre/refer-timbre)
 
@@ -42,8 +43,9 @@
       :logger (logger/rolling-file-appender)
       :env (env/environment)
       :datomic (db/datomic db-name db-schema)
-      :watcher (watcher/tx-report-watcher)
-      :listener (listener/tx-listener)
+      :publisher (publisher/tx-report-publisher)
+      :subscriber (subscriber/tx-report-subscriber)
+      :zeromq (queue/zeromq) 
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)

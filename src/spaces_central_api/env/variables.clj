@@ -11,11 +11,6 @@
     (assoc variables :datomic-uri datomic-uri)
     (raise {:error "Env variable DATOMIC_URI not set!"})))
 
-(defn- assemble-search-api-url [variables] 
-  (if-let [search-api-url (:spaces-search-api-url env)]
-    (assoc variables :search-api-url search-api-url)
-    (raise {:error "Env variable SPACES_SEARCH_API_URL not set!"})))
-
 (defrecord Environment []
   component/Lifecycle 
   
@@ -23,15 +18,13 @@
     (info "Assembling Environment")
     (cond->
       this
-      ((complement :datomic-uri) this) (assemble-datomic-uri)
-      ((complement :search-api-url) this) (assemble-search-api-url)))
+      ((complement :datomic-uri) this) (assemble-datomic-uri)))
   
   (stop [this]
     (info "Disassembling Environment")
     (cond-> 
       this
-      (:datomic-uri this) (dissoc :datomic-uri)
-      (:search-api-url this) (dissoc :search-api-url))))
+      (:datomic-uri this) (dissoc :datomic-uri))))
 
 (defn environment []
   (component/using 

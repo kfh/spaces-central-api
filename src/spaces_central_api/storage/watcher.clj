@@ -1,36 +1,58 @@
-(ns spaces-central-api.storage.watcher
+(ns spaces-central-api.storage.publisher
   (:require [datomic.api :as d]
             [taoensso.timbre :as timbre]
             [com.stuartsierra.component :as component]
-            [clojure.core.async :refer [>!! mult chan close! thread]]))
+            [clojure.core.async :refer [>!! pub chan close! thread]]))
 
 (timbre/refer-timbre)
 
-(defrecord TxReportWatcher [datomic]
+(defn- take-geolocations [tx-report] 
+  (keep 
+    (fn [[e a v t added]]
+      (let [db (if added (:db-after tx-report) (:db-before tx-report))
+            entity (partial d/entity db)] 
+        (when (= :location/geocode (-> a entity :db/ident))
+          (let [{:keys [:geocode/latitude :geocode/longitude]} (entity v)
+                public-id '[{:real-estate/_location [{:ad/_real-estate [:ad/public-id]}]}]]
+            {:id (->> e
+                      (d/pull db public-id) 
+                      :real-estate/_location 
+                      :ad/_real-estate 
+                      :ad/public-id) 
+             :geocodes {:lat latitude :lon longitude}
+             :timestamp (->> t 
+                             (d/entity (:db-after tx-report)) 
+                             :db/txInstant) 
+             :added added})))) 
+    (:tx-data tx-report)))
+
+(defrecord TxReportPublisher [datomic]
   component/Lifecycle
 
   (start [this]
-    (info "Starting transaction report watcher")
-    (if (:tx-publisher this) 
+    (info "Starting transaction report publisher")
+    (if (:publisher this) 
       this
-      (let [tx-publisher (chan)
-            tx-listener (mult tx-publisher)
+      (let [publisher (chan)
+            publication (pub publisher #(:topic %))
             tx-queue (d/tx-report-queue (:conn datomic))]
         (thread 
           (while true
-            (let [tx-report (.take tx-queue)]
-              (>!! tx-publisher tx-report))))
-        (assoc this :tx-publisher tx-publisher :tx-listener tx-listener))))
+            (when-let [tx-report (.take tx-queue)]
+              (let [data (take-geolocations tx-report)]
+                (when-not (empty? data)
+                  (>!! publisher {:topic :geolocations :data data}))))))
+        (assoc this :publisher publisher :publication publication))))
 
   (stop [this]
-    (info "Stopping transaction report watcher")
-    (if-not (:tx-publisher this) 
+    (info "Stopping transaction report publisher")
+    (if-not (:publisher this) 
       this
       (do 
-        (close! (:tx-publisher this))
-        (dissoc this :tx-publisher :tx-listener)))))
+        (close! (:publisher this))
+        (dissoc this :publisher :publication)))))
 
-(defn tx-report-watcher []
+(defn tx-report-publisher []
   (component/using 
-    (map->TxReportWatcher {})
+    (map->TxReportPublisher {})
     [:datomic]))
