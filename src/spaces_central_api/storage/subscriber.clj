@@ -21,7 +21,7 @@
 (defn- take-and-queue-geolocations [channel subscriber]
   (go-loop []
     (when-let [geolocations (<! subscriber)]
-      (queue-geolocations channel geolocations)) 
+      (queue-geolocations channel (:data geolocations))) 
     (recur)))
 
 (defrecord TxReportSubscriber [publisher zeromq]
