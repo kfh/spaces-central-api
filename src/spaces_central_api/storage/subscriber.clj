@@ -15,7 +15,7 @@
     (transit/write writer data)
     (.toByteArray buffer)))
 
-(defrecord GeolocationsSubscriber [topic-publisher hornetq-geocodes]
+(defrecord GeolocationsSubscriber [topic-publisher hornetq-geolocations]
   component/Lifecycle
   (start [this]
     (info "Starting geolocations subscriber")
@@ -25,7 +25,7 @@
             subscription (sub (:publication topic-publisher) :geolocations subscriber)]
         (go-loop []
           (when-let [geolocations (<! (:topic-publisher topic-publisher))]
-            (put! (:pub-in hornetq-geocodes) (-> (:data geolocations) (write-transit)))) 
+            (put! (:pub-in hornetq-geolocations) (-> (:data geolocations) (write-transit)))) 
           (recur))
         (assoc this :subscriber subscriber :subscription subscription))))
 
@@ -41,4 +41,4 @@
 (defn geolocations-subscriber []
   (component/using
     (map->GeolocationsSubscriber {})
-    [:topic-publisher :hornetq-geocodes]))
+    [:topic-publisher :hornetq-geolocations]))

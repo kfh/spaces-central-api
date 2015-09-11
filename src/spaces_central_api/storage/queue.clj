@@ -6,15 +6,15 @@
 
 (timbre/refer-timbre)
 
-(defrecord HornetQGeocodes []
+(defrecord HornetQGeolocations []
   component/Lifecycle
 
   (start [this]
-    (info "Starting HornetQ(geocodes)")
+    (info "Starting HornetQ(geolocations)")
     (if (:pub-in this)
       this
       (let [pub-in (chan)
-            t (topic "geocodes")] 
+            t (topic "geolocations")] 
         (thread
           (while true
             (when-let [data (<!! pub-in)]
@@ -22,10 +22,10 @@
         (assoc this :pub-in pub-in))))
 
   (stop [this]
-    (info "Stopping HornetQ(geocodes)")
+    (info "Stopping HornetQ(geolocations)")
     (if-not (:pub-in this)
       this
       (dissoc this :pub-in))))
 
-(defn hornetq-geocodes []
-  (map->HornetQGeocodes {}))
+(defn hornetq-geolocations []
+  (map->HornetQGeolocations {}))
