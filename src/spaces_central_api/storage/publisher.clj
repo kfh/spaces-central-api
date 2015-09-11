@@ -2,7 +2,7 @@
   (:require [datomic.api :as d]
             [taoensso.timbre :as timbre]
             [com.stuartsierra.component :as component]
-            [clojure.core.async :refer [>!! pub chan close! thread]]))
+            [clojure.core.async :refer [>!! <!! chan close! pub thread]]))
 
 (timbre/refer-timbre)
 
@@ -26,33 +26,62 @@
              :added added})))) 
     (:tx-data tx-report)))
 
+(defn- publish-geolocations [tx-report topic-publisher]
+  (let [geolocations (take-geolocations tx-report)]
+    (when-not (empty? geolocations)
+      (>!! topic-publisher {:topic :geolocations :data geolocations}))))
+
 (defrecord TxReportPublisher [datomic]
   component/Lifecycle
 
   (start [this]
     (info "Starting transaction report publisher")
-    (if (:publisher this) 
+    (if (:tx-publisher this) 
       this
-      (let [publisher (chan)
-            publication (pub publisher #(:topic %))
+      (let [tx-publisher (chan)
             tx-queue (d/tx-report-queue (:conn datomic))]
         (thread 
           (while true
             (when-let [tx-report (.take tx-queue)]
-              (let [data (take-geolocations tx-report)]
-                (when-not (empty? data)
-                  (>!! publisher {:topic :geolocations :data data}))))))
-        (assoc this :publisher publisher :publication publication))))
+              (>!! tx-publisher tx-report))))
+        (assoc this :tx-publisher tx-publisher))))
 
   (stop [this]
     (info "Stopping transaction report publisher")
-    (if-not (:publisher this) 
+    (if-not (:tx-publisher this) 
       this
       (do 
-        (close! (:publisher this))
-        (dissoc this :publisher :publication)))))
+        (close! (:tx-publisher this))
+        (dissoc this :tx-publisher)))))
 
 (defn tx-report-publisher []
   (component/using 
     (map->TxReportPublisher {})
     [:datomic]))
+
+(defrecord TopicPublisher [tx-report-publisher]
+  component/Lifecycle
+  (start [this]
+    (info "Starting topic publisher")
+    (if (:topic-publisher this)
+      this
+      (let [topic-publisher (chan)
+            publication (pub topic-publisher #(:topic %))]
+        (thread
+          (while true
+            (when-let [tx-report (<!! (:tx-publisher tx-report-publisher))]
+              (publish-geolocations tx-report topic-publisher))))
+        (assoc this :topic-publisher topic-publisher :publication publication))))
+
+  (stop [this]
+    (info "Stopping topic publisher")
+    (if-not (:topic-publisher this)
+      this
+      (do
+        (close! (:topic-publisher this))
+        (dissoc this :topic-publisher :publication)))))
+
+(defn topic-publisher []
+  (component/using
+    (map->TopicPublisher {})
+    [:tx-report-publisher]))

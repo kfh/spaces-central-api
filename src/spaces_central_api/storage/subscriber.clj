@@ -4,7 +4,7 @@
             [taoensso.timbre :as timbre]
             [cognitect.transit :as transit]
             [com.stuartsierra.component :as component]
-            [clojure.core.async :refer [<! sub unsub-all chan put! close! go-loop]])
+            [clojure.core.async :refer [<! sub unsub chan put! close! go-loop]])
   (import [java.io ByteArrayOutputStream]))
 
 (timbre/refer-timbre)
@@ -15,37 +15,30 @@
     (transit/write writer data)
     (.toByteArray buffer)))
 
-(defn- queue-geolocations [channel geolocations]
-  (put! channel (write-transit geolocations)))
-
-(defn- take-and-queue-geolocations [channel subscriber]
-  (go-loop []
-    (when-let [geolocations (<! subscriber)]
-      (queue-geolocations channel (:data geolocations))) 
-    (recur)))
-
-(defrecord TxReportSubscriber [publisher zeromq]
+(defrecord GeolocationsSubscriber [topic-publisher hornetq]
   component/Lifecycle
-
   (start [this]
-    (info "Starting transaction report subscriber")
+    (info "Starting geolocations subscriber")
     (if (:subscriber this)
       this
       (let [subscriber (chan)
-            subscription (sub (:publication publisher) :geolocations subscriber)]
-        (take-and-queue-geolocations (:pub-channel zeromq) subscriber)
+            subscription (sub (:publication topic-publisher) :geolocations subscriber)]
+        (go-loop []
+          (when-let [geolocations (<! (:topic-publisher topic-publisher))]
+            (put! (:pub-in hornetq) (-> (:data geolocations) (write-transit)))) 
+          (recur))
         (assoc this :subscriber subscriber :subscription subscription))))
 
   (stop [this]
-    (info "Stopping transaction report subscriber")
+    (info "Stopping geolocations subscriber")
     (if-not (:subscriber this)
       this
       (do 
-        (unsub-all (:publication publisher))
+        (unsub (:publication topic-publisher) :geolocations (:subscriber this))
         (close! (:subscriber this))
         (dissoc this :subscriber :subscription)))))
 
-(defn tx-report-subscriber []
+(defn geolocations-subscriber []
   (component/using
-    (map->TxReportSubscriber {})
-    [:publisher :zeromq]))
+    (map->GeolocationsSubscriber {})
+    [:topic-publisher :hornetq]))
