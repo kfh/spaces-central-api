@@ -46,7 +46,7 @@
       :tx-report-publisher (publisher/tx-report-publisher)
       :topic-publisher (publisher/topic-publisher)
       :subscriber (subscriber/geolocations-subscriber)
-      :hornetq (queue/hornetq) 
+      :hornetq-geocodes (queue/hornetq-geocodes) 
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
