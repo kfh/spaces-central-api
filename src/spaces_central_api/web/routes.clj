@@ -46,7 +46,7 @@
   :as-response (as-response {:allow-json-verbose? false})
   :handle-exception (fn [ctx] {::error (.getMessage (:exception ctx))}))
 
-(defrecord ApiRoutes [channel-sockets datomic geocoder]
+(defrecord ApiRoutes [datomic geocoder]
   component/Lifecycle
 
   (start [this]
@@ -54,8 +54,6 @@
     (if (:routes this)
       this 
       (->> (context "/api" []
-                    (GET  "/chsk" req ((:ring-ajax-get-or-ws-handshake channel-sockets)) req)
-                    (POST "/chsk" req ((:ring-ajax-post channel-sockets)) req) 
                     (ANY "/ads" [] (list-resource datomic geocoder))
                     (ANY "/ads/:ad-id" [ad-id] (ad-resource datomic geocoder ad-id) ))
            (assoc this :routes))))
@@ -69,4 +67,4 @@
 (defn api-routes []
   (component/using
     (map->ApiRoutes {})
-    [:channel-sockets :datomic :geocoder]))
+    [:datomic :geocoder]))

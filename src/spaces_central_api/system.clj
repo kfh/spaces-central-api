@@ -50,7 +50,6 @@
       :geocoder (geocoder/google)  
       :api-routes (routes/api-routes)
       :ring-handler (handler/ring-handler)
-      :channel-sockets (sente/channel-sockets)
       :web-server (server/web-server web-host web-port))))
 
 (defn -main [& args]
