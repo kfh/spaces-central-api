@@ -12,7 +12,8 @@
             [spaces-central-api.logger.loggers :as logger]
             [spaces-central-api.gateway.geocoder :as geocoder]
             [spaces-central-api.storage.publisher :as publisher]
-            [spaces-central-api.storage.subscriber :as subscriber]))
+            [spaces-central-api.storage.subscriber :as subscriber]
+            [reloaded.repl :refer [system init start stop go reset]]))
 
 (timbre/refer-timbre)
 
@@ -51,7 +52,8 @@
       :ring-handler (handler/ring-handler)
       :web-server (server/web-server web-host web-port))))
 
-(defn -main [& args]
-  (component/start
-    (spaces-system config))
+(defn -main []
+  (reloaded.repl/set-init! #(spaces-system config))
+  (go)
   (info "Spaces central api up and running"))
+

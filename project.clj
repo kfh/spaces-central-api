@@ -9,6 +9,7 @@
                  [http-kit "2.1.19"]
                  [compojure "1.4.0"]
                  [geocoder-clj "0.2.5"]
+                 [reloaded.repl "0.2.0"]
                  [im.chit/ribol "0.4.1"]
                  [prismatic/schema "1.0.1"]
                  [prismatic/plumbing "0.5.0"]
