@@ -1,48 +1,37 @@
 (ns spaces-central-api.domain.ads
-  (:require [schema.core :as s]
-            [taoensso.timbre :as timbre]))
+  (:require [schema.core :as s])
+  (:import (java.util UUID)))
 
-(def res-types (s/enum :real-estate.type/apartment :real-estate.type/house)) 
+(def Types (s/enum :real-estate.type/apartment :real-estate.type/house))
 
-(def features [(s/enum :real-estate.feature/elevator :real-estate.feature/aircondition 
-                       :real-estate.feature/fireplace :real-estate.feature/lawn 
-                       :real-estate.feature/garage)]) 
+(def Features (s/enum :real-estate.feature/elevator :real-estate.feature/aircondition
+                              :real-estate.feature/fireplace :real-estate.feature/lawn
+                              :real-estate.feature/garage))
 
-(def Location
-  {(s/required-key :location/name) s/Str
-   (s/required-key :location/street) s/Str
-   (s/required-key :location/street-number) s/Str
-   (s/required-key :location/zip-code) s/Str
-   (s/required-key :location/city) s/Str})  
+(s/defschema Location
+  {:location/name          s/Str
+   :location/street        s/Str
+   :location/street-number s/Str
+   :location/zip-code      s/Str
+   :location/city          s/Str})
 
-(def RealEstate
-  {(s/required-key :real-estate/title) s/Str
-   (s/required-key :real-estate/description) s/Str
-   (s/required-key :real-estate/type) res-types
-   (s/required-key :real-estate/cost) s/Str
-   (s/required-key :real-estate/size) s/Str
-   (s/required-key :real-estate/bedrooms) s/Str
-   (s/required-key :real-estate/features) features
-   (s/required-key :real-estate/location) Location})
+(s/defschema RealEstate
+  {:real-estate/title       s/Str
+   :real-estate/description s/Str
+   :real-estate/type        Types
+   :real-estate/cost        s/Str
+   :real-estate/size        s/Str
+   :real-estate/bedrooms    s/Str
+   :real-estate/features    #{Features}
+   :real-estate/location    Location})
 
-(def Ad 
-  {(s/optional-key :ad/public-id) s/Str
-   (s/required-key :ad/type) (s/eq :ad.type/real-estate)
-   (s/required-key :ad/start-time) s/Str
-   (s/required-key :ad/end-time) s/Str
-   (s/required-key :ad/active) boolean
-   (s/required-key :ad/real-estate) RealEstate})
+(s/defschema Ad
+  {:ad/public-id   UUID
+   :ad/type        (s/eq :ad.type/real-estate)
+   :ad/start-time  s/Str
+   :ad/end-time    s/Str
+   :ad/active      Boolean
+   :ad/real-estate RealEstate})
 
-(defn- coerce [ad]
-  (update-in 
-    ad [:ad/real-estate :real-estate/features] 
-    (fn [coll] 
-      (if (set? coll) 
-        (vec coll) 
-        coll))))
+(s/defschema NewAd (dissoc Ad :ad/public-id))
 
-(defn validate-ad [ad]
-  (s/validate Ad (coerce ad)))
-
-(defn validate-ad-id [ad-id]
-  (s/validate s/Str ad-id))

@@ -8,7 +8,7 @@
 (defn- squuid [] (str (d/squuid)))
 
 (defn- ->entity [tx-res eid]
-  (d/entity (:db-after tx-res) eid)) 
+  (d/entity (:db-after tx-res) eid))
 
 (defn- resolve-tempids [tx-res eid]
   (let [tempids (:tempids tx-res)
@@ -26,7 +26,7 @@
           realized-entity))))    
 
 (defn get-ad [conn ad-id]
-  (let [ref [:ad/public-id ad-id]] 
+  (let [ref [:ad/public-id (str ad-id)]]
     (when-let [entity (d/entity (d/db conn) ref)]
       (->ad entity))))
 
@@ -60,16 +60,16 @@
    :real-estate/location (->location-fact (:real-estate/location attrs))})
 
 (defn- ->ad-fact [ref attrs]
-  {:db/id ref
-   :ad/public-id (:ad/public-id attrs)
-   :ad/type (:ad/type attrs)
-   :ad/start-time (:ad/start-time attrs)
-   :ad/end-time (:ad/end-time attrs)
-   :ad/active (:ad/active attrs)
+  {:db/id          ref
+   :ad/public-id   (:ad/public-id attrs)
+   :ad/type        (:ad/type attrs)
+   :ad/start-time  (:ad/start-time attrs)
+   :ad/end-time    (:ad/end-time attrs)
+   :ad/active      (:ad/active attrs)
    :ad/real-estate (->real-estate-fact (:ad/real-estate attrs))})
 
 (defn- upsert-ad [conn attrs]
-  (let [ref [:ad/public-id (:ad-id attrs)]]
+  (let [ref [:ad/public-id (:ad/public-id attrs)]]
     (if (d/entity (d/db conn) ref)
       (-> @(d/transact
              conn
@@ -87,10 +87,10 @@
   (upsert-ad conn (assoc attrs :ad/public-id (squuid))))
 
 (defn update-ad [conn attrs]
-  (upsert-ad conn attrs))
+  (upsert-ad conn (update attrs :ad/public-id str)))
 
-(defn delete-ad [conn ad-id]
-  (let [ref [:ad/public-id ad-id]] 
+(defn delete-ad [conn id]
+  (let [ref [:ad/public-id (str id)]]
     (when-let [entity (d/entity (d/db conn) ref)]
       (->> @(d/transact conn [[:db.fn/retractEntity (:db/id entity)]])
            :tx-data

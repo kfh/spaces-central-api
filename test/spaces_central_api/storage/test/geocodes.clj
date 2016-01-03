@@ -2,14 +2,13 @@
   (:require [clojure.test :refer [deftest testing is]]
             [com.stuartsierra.component :as component]
             [spaces-central-api.storage.ads :as storage] 
-            [spaces-central-api.service.ads :as service]
-            [spaces-central-api.system :refer [spaces-test-db]]  
+            [spaces-central-api.system :refer [spaces-test-db]]
             [spaces-central-api.storage.geocodes :as geocodes]))
 
 (deftest create-ad-and-find-geocode
   (let [system (component/start (spaces-test-db))
-        {:keys [datomic]} system
-        {:keys [conn]} datomic]
+        {:keys [db]} system
+        {:keys [conn]} db]
     (try 
       (testing "Creating ad and finding geocode"
         (let [geocode {:geocode/latitude 13.734603

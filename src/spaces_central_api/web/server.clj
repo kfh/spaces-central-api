@@ -26,11 +26,11 @@
         (dissoc this :server)))))
 
 (defn web-server [host port]
-  (component/using 
+  (component/using
     (map->WebServer {:host host :port port})
     [:ring-handler]))
 
 (defn web-server-test []
-  (component/using 
+  (component/using
     (map->WebServer {:host "127.0.0.1" :port 7777})
     [:ring-handler]))
