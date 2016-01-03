@@ -11,15 +11,15 @@
                  [geocoder-clj "0.2.5"]
                  [reloaded.repl "0.2.0"]
                  [im.chit/ribol "0.4.1"]
-                 [prismatic/schema "1.0.1"]
+                 [prismatic/schema "1.0.4"]
                  [prismatic/plumbing "0.5.0"]
                  [im.chit/hara.data "2.2.11"] 
                  [com.taoensso/sente "1.6.0"]
                  [org.clojure/clojure "1.7.0"]
                  [com.taoensso/timbre "4.1.1"]
-                 [im.chit/hara.common "2.2.11"] 
+                 [im.chit/hara.common "2.2.11"]
+                 [metosin/compojure-api "0.24.3"]
                  [com.stuartsierra/component "0.2.3"] 
-                 [io.clojure/liberator-transit "0.3.0"]
                  [ring-transit "0.1.3" :exclusions  [prismatic/plumbing]]
                  [org.immutant/messaging "2.1.0"
                   :exclusions [org.hornetq/hornetq-server

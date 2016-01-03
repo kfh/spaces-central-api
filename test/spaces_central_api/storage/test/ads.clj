@@ -6,8 +6,8 @@
 
 (deftest create-and-get-ad
   (let [system (component/start (spaces-test-db))
-        {:keys [datomic]} system
-        {:keys [conn]} datomic]
+        {:keys [db]} system
+        {:keys [conn]} db]
     (try 
       (testing "Creating and retreiving an ad"
         (let [geocode {:geocode/latitude 13.734603
@@ -64,8 +64,8 @@
 
 (deftest create-and-get-all-ads
   (let [system (component/start (spaces-test-db))
-        {:keys [datomic]} system
-        {:keys [conn]} datomic]
+        {:keys [db]} system
+        {:keys [conn]} db]
     (try 
       (testing "Creating and retreiving all ads"
         (let [geocode {:geocode/latitude 13.734603
@@ -120,8 +120,8 @@
 
 (deftest create-and-update-ad
   (let [system (component/start (spaces-test-db))
-        {:keys [datomic]} system
-        {:keys [conn]} datomic]
+        {:keys [db]} system
+        {:keys [conn]} db]
     (try 
       (testing "Creating and updating an ad"
         (let [geocode {:geocode/latitude 13.7315902 
@@ -164,8 +164,8 @@
 
 (deftest create-and-delete-ad
   (let [system (component/start (spaces-test-db))
-        {:keys [datomic]} system
-        {:keys [conn]} datomic]
+        {:keys [db]} system
+        {:keys [conn]} db]
     (try
       (testing "Creating and deleting an ad"
         (let [geocode {:geocode/latitude 13.734603

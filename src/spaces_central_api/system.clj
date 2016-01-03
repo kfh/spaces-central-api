@@ -2,13 +2,11 @@
   (:gen-class)
   (:require [taoensso.timbre :as timbre] 
             [spaces-central-api.storage.db :as db]
-            [spaces-central-api.web.sente :as sente]
             [spaces-central-api.env.variables :as env]
-            [spaces-central-api.web.routes :as routes]
             [spaces-central-api.web.server :as server]
-            [com.stuartsierra.component :as component]  
-            [spaces-central-api.storage.queue :as queue]    
+            [com.stuartsierra.component :as component]
             [spaces-central-api.web.handler :as handler]
+            [spaces-central-api.storage.queue :as queue]    
             [spaces-central-api.logger.loggers :as logger]
             [spaces-central-api.gateway.geocoder :as geocoder]
             [spaces-central-api.storage.publisher :as publisher]
@@ -27,13 +25,12 @@
 
 (defn spaces-test-db []
   (component/system-map
-    :datomic (db/datomic-test)))
+    :db (db/datomic-test)))
 
 (defn spaces-test-system []
   (component/system-map
-    :datomic (db/datomic-test)
+    :db (db/datomic-test)
     :geocoder (geocoder/google)
-    :api-routes (routes/api-routes)
     :ring-handler (handler/ring-handler)
     :web-server (server/web-server-test)))
 
@@ -42,13 +39,12 @@
     (component/system-map
       :logger (logger/rolling-file-appender)
       :env (env/environment)
-      :datomic (db/datomic db-name db-schema)
+      :db (db/datomic db-name db-schema)
       :tx-report-publisher (publisher/tx-report-publisher)
       :topic-publisher (publisher/topic-publisher)
       :subscriber (subscriber/geolocations-subscriber)
       :hornetq-geolocations (queue/hornetq-geolocations) 
-      :geocoder (geocoder/google)  
-      :api-routes (routes/api-routes)
+      :geocoder (geocoder/google)
       :ring-handler (handler/ring-handler)
       :web-server (server/web-server web-host web-port))))
 

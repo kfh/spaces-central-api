@@ -31,7 +31,7 @@
     (when-not (empty? geolocations)
       (>!! topic-publisher {:topic :geolocations :data geolocations}))))
 
-(defrecord TxReportPublisher [datomic]
+(defrecord TxReportPublisher [db]
   component/Lifecycle
 
   (start [this]
@@ -39,7 +39,7 @@
     (if (:tx-publisher this) 
       this
       (let [tx-publisher (chan)
-            tx-queue (d/tx-report-queue (:conn datomic))]
+            tx-queue (d/tx-report-queue (:conn db))]
         (thread 
           (while true
             (when-let [tx-report (.take tx-queue)]
@@ -57,7 +57,7 @@
 (defn tx-report-publisher []
   (component/using 
     (map->TxReportPublisher {})
-    [:datomic]))
+    [:db]))
 
 (defrecord TopicPublisher [tx-report-publisher]
   component/Lifecycle
